@@ -1,0 +1,3 @@
+"""
+Phugoid Flight Mechanics Library
+"""
