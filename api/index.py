@@ -65,9 +65,8 @@ def get_aircraft(params: Optional[AircraftParameters]):
     ac = Cessna172() # Start with default
     if params:
         # Update parameters
-        for k, v in params.model_dump().items():
-            if v is not None:
-                setattr(ac, k, v)
+        for k, v in params.model_dump(exclude_none=True).items():
+            setattr(ac, k, v)
     return ac
 
 @app.get("/api/health")
