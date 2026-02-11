@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phugoid - Flight Dynamics Workbench</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Phugoid</h1>
+        <p>Flight Dynamics & Control Workbench</p>
+    </header>
+
+    <main>
+        <section id="controls">
+            <h2>Flight Conditions</h2>
+            <div class="input-group">
+                <label for="velocity">Velocity (m/s)</label>
+                <input type="number" id="velocity" value="51.44" step="1">
+            </div>
+            <div class="input-group">
+                <label for="altitude">Altitude (m)</label>
+                <input type="number" id="altitude" value="1524" step="100">
+            </div>
+            <button id="calculate-btn">Calculate Trim & Stability</button>
+        </section>
+
+        <section id="results">
+            <div id="trim-results">
+                <h2>Trim State</h2>
+                <div class="card">
+                    <p><strong>Alpha:</strong> <span id="trim-alpha">-</span> deg</p>
+                    <p><strong>Elevator:</strong> <span id="trim-elevator">-</span> deg</p>
+                    <p><strong>Throttle:</strong> <span id="trim-throttle">-</span> %</p>
+                    <p><strong>Theta:</strong> <span id="trim-theta">-</span> deg</p>
+                </div>
+            </div>
+
+            <div id="stability-results">
+                <h2>Eigenmodes</h2>
+                <div id="pole-plot" style="width:100%;height:400px;"></div>
+                <div id="mode-list">
+                    <h3>Longitudinal Modes</h3>
+                    <ul id="lon-modes"></ul>
+                    <h3>Lateral Modes</h3>
+                    <ul id="lat-modes"></ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="visualization">
+            <h2>Aircraft Attitude</h2>
+            <div id="3d-viewer"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Phugoid Project</p>
+    </footer>
+
+    <script src="pole_plot.js"></script>
+    <script src="aircraft_viewer.js"></script>
+    <script>
+        document.getElementById('calculate-btn').addEventListener('click', async () => {
+            const velocity = parseFloat(document.getElementById('velocity').value);
+            const altitude = parseFloat(document.getElementById('altitude').value);
+
+            // Trim
+            const trimRes = await fetch('/api/trim', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({velocity, altitude})
+            });
+            const trimData = await trimRes.json();
+
+            if (trimData.detail) {
+                alert('Error: ' + trimData.detail);
+                return;
+            }
+
+            document.getElementById('trim-alpha').textContent = trimData.alpha_deg.toFixed(2);
+            document.getElementById('trim-elevator').textContent = trimData.elevator_deg.toFixed(2);
+            document.getElementById('trim-throttle').textContent = (trimData.throttle * 100).toFixed(1);
+            document.getElementById('trim-theta').textContent = trimData.theta_deg.toFixed(2);
+
+            // Update 3D viewer (if implemented)
+            if (window.updateAircraftAttitude) {
+                window.updateAircraftAttitude(trimData.theta_deg * Math.PI / 180, 0, 0);
+            }
+
+            // Analyze
+            const analyzeRes = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({velocity, altitude})
+            });
+            const analyzeData = await analyzeRes.json();
+
+            if (analyzeData.detail) {
+                alert('Error: ' + analyzeData.detail);
+                return;
+            }
+
+            // Plot Poles
+            if (window.plotPoles) {
+                window.plotPoles(analyzeData.longitudinal, analyzeData.lateral);
+            }
+
+            // List Modes
+            const lonList = document.getElementById('lon-modes');
+            lonList.innerHTML = '';
+            analyzeData.longitudinal.forEach(m => {
+                const li = document.createElement('li');
+                li.textContent = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)}`;
+                lonList.appendChild(li);
+            });
+
+            const latList = document.getElementById('lat-modes');
+            latList.innerHTML = '';
+            analyzeData.lateral.forEach(m => {
+                const li = document.createElement('li');
+                li.textContent = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)}`;
+                latList.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
