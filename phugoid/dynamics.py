@@ -25,6 +25,14 @@ def equations_of_motion(t, state, aircraft, control):
     phi, theta, psi = state[6:9]
     x, y, z = state[9:12] # z is positive down (altitude = -z)
 
+    # Pre-calculate trigonometric functions
+    c_th = np.cos(theta)
+    s_th = np.sin(theta)
+    c_ph = np.cos(phi)
+    s_ph = np.sin(phi)
+    c_ps = np.cos(psi)
+    s_ps = np.sin(psi)
+
     # Unpack control
     delta_e, delta_a, delta_r, throttle = control
 
@@ -50,14 +58,21 @@ def equations_of_motion(t, state, aircraft, control):
 
     # Aerodynamic Angles
     alpha = np.arctan2(w, u)
+    s_alpha = np.sin(alpha)
+    c_alpha = np.cos(alpha)
+
     beta = np.arcsin(np.clip(v/V, -1, 1))
 
-    # Dynamic Pressure
+    # Dynamic Pressure & Common terms
     q_bar = 0.5 * rho * V**2
+    q_bar_S = q_bar * S
+    q_bar_S_b = q_bar_S * b
+    q_bar_S_c = q_bar_S * c
+    inv_2V = 0.5 / V
 
     # Aerodynamic Coefficients (Linear approximations)
     # CL = CL0 + CL_alpha * alpha + CL_q * (c/(2V)) * q + CL_de * delta_e
-    CL = aircraft.CL0 + aircraft.CL_alpha * alpha + aircraft.CL_q * (c/(2*V)) * q + aircraft.CL_de * delta_e
+    CL = aircraft.CL0 + aircraft.CL_alpha * alpha + aircraft.CL_q * (c * inv_2V) * q + aircraft.CL_de * delta_e
 
     # CD (Polar)
     # CD = CD0 + k * CL^2 (Simplified) or linear with alpha
@@ -65,12 +80,12 @@ def equations_of_motion(t, state, aircraft, control):
 
     # Cm (Pitching Moment)
     # Cm = Cm0 + Cm_alpha * alpha + Cm_q * (c/(2V)) * q + Cm_de * delta_e
-    Cm = aircraft.Cm0 + aircraft.Cm_alpha * alpha + aircraft.Cm_q * (c/(2*V)) * q + aircraft.Cm_de * delta_e
+    Cm = aircraft.Cm0 + aircraft.Cm_alpha * alpha + aircraft.Cm_q * (c * inv_2V) * q + aircraft.Cm_de * delta_e
 
     # Lateral (Simplified)
     CY = aircraft.Cy_beta * beta
-    Cl = aircraft.Cl_beta * beta + aircraft.Cl_p * (b/(2*V)) * p
-    Cn = aircraft.Cn_beta * beta + aircraft.Cn_r * (b/(2*V)) * r
+    Cl = aircraft.Cl_beta * beta + aircraft.Cl_p * (b * inv_2V) * p
+    Cn = aircraft.Cn_beta * beta + aircraft.Cn_r * (b * inv_2V) * r
 
     # Forces in Stability/Wind Axes -> Body Axes
     # Lift (L) acts perpendicular to V in plane of symmetry
@@ -82,14 +97,14 @@ def equations_of_motion(t, state, aircraft, control):
     # Fz_aero = -D sin(alpha) - L cos(alpha)
     # Fy_aero = Y
 
-    Fx_aero = q_bar * S * (-CD * np.cos(alpha) + CL * np.sin(alpha))
-    Fz_aero = q_bar * S * (-CD * np.sin(alpha) - CL * np.cos(alpha))
-    Fy_aero = q_bar * S * CY
+    Fx_aero = q_bar_S * (-CD * c_alpha + CL * s_alpha)
+    Fz_aero = q_bar_S * (-CD * s_alpha - CL * c_alpha)
+    Fy_aero = q_bar_S * CY
 
     # Moments
-    L_moment = q_bar * S * b * Cl
-    M_moment = q_bar * S * c * Cm
-    N_moment = q_bar * S * b * Cn
+    L_moment = q_bar_S_b * Cl
+    M_moment = q_bar_S_c * Cm
+    N_moment = q_bar_S_b * Cn
 
     # Thrust (Assumed aligned with x-body axis for simplicity)
     # Simple model: Thrust proportional to throttle * density ratio
@@ -100,9 +115,9 @@ def equations_of_motion(t, state, aircraft, control):
     Fz = Fz_aero
 
     # Gravity in Body Frame
-    Gx = -m * g * np.sin(theta)
-    Gy = m * g * np.cos(theta) * np.sin(phi)
-    Gz = m * g * np.cos(theta) * np.cos(phi)
+    Gx = -m * g * s_th
+    Gy = m * g * c_th * s_ph
+    Gz = m * g * c_th * c_ph
 
     # Total Forces
     Fx_total = Fx + Gx
@@ -149,18 +164,16 @@ def equations_of_motion(t, state, aircraft, control):
     # [theta_dot] = [ 0  cos(phi)            -sin(phi)          ] [ q ]
     # [psi_dot]   [ 0  sin(phi)sec(theta)  cos(phi)sec(theta) ] [ r ]
 
-    phi_dot = p + (q * np.sin(phi) + r * np.cos(phi)) * np.tan(theta)
-    theta_dot = q * np.cos(phi) - r * np.sin(phi)
-    psi_dot = (q * np.sin(phi) + r * np.cos(phi)) / np.cos(theta)
+    # tan(theta) = s_th / c_th
+    t_th = s_th / c_th
+
+    phi_dot = p + (q * s_ph + r * c_ph) * t_th
+    theta_dot = q * c_ph - r * s_ph
+    psi_dot = (q * s_ph + r * c_ph) / c_th
 
     # Navigation (Position rates) NED
     # Transform Body velocities (u,v,w) to NED (x_dot, y_dot, z_dot)
-    c_th = np.cos(theta)
-    s_th = np.sin(theta)
-    c_ph = np.cos(phi)
-    s_ph = np.sin(phi)
-    c_ps = np.cos(psi)
-    s_ps = np.sin(psi)
+    # (s_th, c_th, etc are already calculated)
 
     # Rotation Matrix Body to NED
     # R11 = c_th*c_ps
