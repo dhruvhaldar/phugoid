@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from typing import List, Optional
 import numpy as np
 from phugoid.aerodynamics import Cessna172
@@ -8,8 +9,28 @@ from phugoid.linearize import Linearizer
 from phugoid.modes import calculate_damping_ratio, calculate_natural_frequency
 import os
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
+
+# Security Middleware
+class SecureHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        # Strict CSP, but allowing 'unsafe-inline' for simple frontend scripts and styles
+        # Also allowing Plotly and Three.js CDNs
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://cdnjs.cloudflare.com; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "connect-src 'self'"
+        )
+        return response
+
+app.add_middleware(SecureHeadersMiddleware)
 
 class AircraftParameters(BaseModel):
     # Core Geometry & Mass
@@ -30,8 +51,8 @@ class AircraftParameters(BaseModel):
     Cm0: float = -0.02
 
 class TrimRequest(BaseModel):
-    velocity: float
-    altitude: float
+    velocity: float = Field(..., gt=0, description="Velocity in m/s (must be positive)")
+    altitude: float = Field(..., ge=-500, le=50000, description="Altitude in meters")
     flight_path_angle: float = 0.0
     aircraft: Optional[AircraftParameters] = None
 
@@ -44,8 +65,8 @@ class TrimResponse(BaseModel):
     w: float
 
 class AnalysisRequest(BaseModel):
-    velocity: float
-    altitude: float
+    velocity: float = Field(..., gt=0, description="Velocity in m/s (must be positive)")
+    altitude: float = Field(..., ge=-500, le=50000, description="Altitude in meters")
     aircraft: Optional[AircraftParameters] = None
 
 class ModeData(BaseModel):
@@ -75,9 +96,9 @@ def health_check():
 
 @app.post("/api/trim", response_model=TrimResponse)
 def calculate_trim(req: TrimRequest):
-    ac = get_aircraft(req.aircraft)
-    solver = TrimSolver(ac)
     try:
+        ac = get_aircraft(req.aircraft)
+        solver = TrimSolver(ac)
         trim = solver.find_trim(req.velocity, req.altitude, req.flight_path_angle)
         return TrimResponse(
             alpha_deg=trim.alpha_deg,
@@ -87,14 +108,20 @@ def calculate_trim(req: TrimRequest):
             u=trim.u,
             w=trim.w
         )
+    except RuntimeError as e:
+        # Expected runtime errors like convergence failure
+        print(f"Trim Runtime Error: {e}")
+        raise HTTPException(status_code=422, detail="Calculation failed to converge. Please check your inputs.")
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # Unexpected errors
+        print(f"Internal Error in /api/trim: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred.")
 
 @app.post("/api/analyze", response_model=AnalysisResponse)
 def analyze_stability(req: AnalysisRequest):
-    ac = get_aircraft(req.aircraft)
-    solver = TrimSolver(ac)
     try:
+        ac = get_aircraft(req.aircraft)
+        solver = TrimSolver(ac)
         trim = solver.find_trim(req.velocity, req.altitude)
         lin = Linearizer(ac, trim)
 
@@ -119,8 +146,12 @@ def analyze_stability(req: AnalysisRequest):
             lateral=format_modes(lat_modes)
         )
 
+    except RuntimeError as e:
+        print(f"Analysis Runtime Error: {e}")
+        raise HTTPException(status_code=422, detail="Calculation failed to converge. Please check your inputs.")
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        print(f"Internal Error in /api/analyze: {e}")
+        raise HTTPException(status_code=500, detail="An internal error occurred.")
 
 if os.path.exists("public"):
     app.mount("/", StaticFiles(directory="public", html=True), name="public")
