@@ -68,3 +68,46 @@ button:hover {
     height: 400px;
     background-color: #eee;
 }
+
+/* UX Improvements */
+
+.error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    display: none; /* Hidden by default */
+}
+
+.error-message:not(:empty) {
+    display: block;
+}
+
+button.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    position: relative;
+    padding-left: 40px; /* Make space for spinner */
+}
+
+/* Simple CSS Spinner */
+button.loading::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    margin-top: -8px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
