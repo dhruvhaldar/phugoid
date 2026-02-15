@@ -111,3 +111,10 @@ button.loading::after {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Accessibility: Focus Visible */
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+}
