@@ -21,13 +21,27 @@ def atmosphere(altitude):
     # or handle it if needed. For flight mechanics of typical GA aircraft,
     # troposphere is sufficient.
 
-    h = np.array(altitude, dtype=float)
-    h_clamped = np.clip(h, 0, 11000) # Troposphere only implementation
+    if isinstance(altitude, (int, float)):
+        # Scalar optimization: Avoid NumPy overhead
+        h_clamped = altitude
+        if h_clamped < 0:
+            h_clamped = 0.0
+        elif h_clamped > 11000:
+            h_clamped = 11000.0
 
-    T = T0 - L * h_clamped
-    P = P0 * (1 - L * h_clamped / T0) ** (g / (R * L))
-    rho = P / (R * T)
-
-    if np.ndim(altitude) == 0:
+        T = T0 - L * h_clamped
+        P = P0 * (1 - L * h_clamped / T0) ** (g / (R * L))
+        rho = P / (R * T)
         return float(T), float(P), float(rho)
-    return T, P, rho
+    else:
+        # Vectorized implementation for arrays
+        h = np.array(altitude, dtype=float)
+        h_clamped = np.clip(h, 0, 11000) # Troposphere only implementation
+
+        T = T0 - L * h_clamped
+        P = P0 * (1 - L * h_clamped / T0) ** (g / (R * L))
+        rho = P / (R * T)
+
+        if np.ndim(altitude) == 0:
+            return float(T), float(P), float(rho)
+        return T, P, rho
