@@ -26,7 +26,7 @@
                     <label for="altitude">Altitude (m)</label>
                     <input type="number" id="altitude" value="1524" step="any" min="-500" max="50000" required>
                 </div>
-                <div id="error-message" role="alert" aria-live="assertive"></div>
+                <div id="error-message" class="error-message" role="alert" aria-live="assertive"></div>
                 <button type="submit" id="calculate-btn">Calculate Trim & Stability</button>
             </form>
         </section>
@@ -44,7 +44,7 @@
 
             <div id="stability-results">
                 <h2>Eigenmodes</h2>
-                <div id="pole-plot" style="width:100%;height:400px;"></div>
+                <div id="pole-plot" role="img" aria-label="Pole-Zero Map showing stability modes" style="width:100%;height:400px;"></div>
                 <div id="mode-list">
                     <h3>Longitudinal Modes</h3>
                     <ul id="lon-modes"></ul>
@@ -56,7 +56,7 @@
 
         <section id="visualization">
             <h2>Aircraft Attitude</h2>
-            <div id="3d-viewer"></div>
+            <div id="3d-viewer" role="img" aria-label="3D visualization of aircraft attitude"></div>
         </section>
     </main>
 
