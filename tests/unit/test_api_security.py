@@ -51,4 +51,12 @@ def test_security_headers():
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
     assert "Content-Security-Policy" in response.headers
-    assert "script-src 'self' 'unsafe-inline'" in response.headers["Content-Security-Policy"]
+
+    csp = response.headers["Content-Security-Policy"]
+    # Ensure unsafe-inline is NOT in script-src
+    script_src = [p.strip() for p in csp.split(";") if p.strip().startswith("script-src")][0]
+    assert "'unsafe-inline'" not in script_src
+
+    # Ensure unsafe-inline IS in style-src (required for Plotly)
+    style_src = [p.strip() for p in csp.split(";") if p.strip().startswith("style-src")][0]
+    assert "'unsafe-inline'" in style_src

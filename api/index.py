@@ -19,11 +19,11 @@ class SecureHeadersMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
-        # Strict CSP, but allowing 'unsafe-inline' for simple frontend scripts and styles
-        # Also allowing Plotly and Three.js CDNs
+        # Strict CSP. Allowing 'unsafe-inline' for styles due to Plotly requirements.
+        # Allowing Plotly and Three.js CDNs for scripts.
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://cdnjs.cloudflare.com; "
+            "script-src 'self' https://cdn.plot.ly https://cdnjs.cloudflare.com; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data:; "
             "connect-src 'self'"
