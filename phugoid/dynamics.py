@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from phugoid.atmosphere import atmosphere
 
 def equations_of_motion(t, state, aircraft, control):
@@ -61,7 +62,14 @@ def equations_of_motion(t, state, aircraft, control):
     s_alpha = np.sin(alpha)
     c_alpha = np.cos(alpha)
 
-    beta = np.arcsin(np.clip(v/V, -1, 1))
+    # Optimized beta calculation for scalars (avoids expensive np.clip/arcsin overhead)
+    arg_beta = v / V
+    if isinstance(arg_beta, (int, float, np.number)):
+        if arg_beta < -1.0: arg_beta = -1.0
+        elif arg_beta > 1.0: arg_beta = 1.0
+        beta = math.asin(float(arg_beta))
+    else:
+        beta = np.arcsin(np.clip(arg_beta, -1, 1))
 
     # Dynamic Pressure & Common terms
     q_bar = 0.5 * rho * V**2
