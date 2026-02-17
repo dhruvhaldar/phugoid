@@ -34,10 +34,10 @@ app.add_middleware(SecureHeadersMiddleware)
 
 class AircraftParameters(BaseModel):
     # Core Geometry & Mass
-    mass: float = 1111.0
-    S: float = 16.2
-    b: float = 11.0
-    c: float = 1.47
+    mass: float = Field(1111.0, gt=0, description="Mass in kg (must be positive)")
+    S: float = Field(16.2, gt=0, description="Wing Area in m^2 (must be positive)")
+    b: float = Field(11.0, gt=0, description="Wing Span in m (must be positive)")
+    c: float = Field(1.47, gt=0, description="Mean Aerodynamic Chord in m (must be positive)")
 
     # Stability Derivatives
     CL_alpha: float = 4.58
