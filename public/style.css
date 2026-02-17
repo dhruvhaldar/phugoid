@@ -123,3 +123,17 @@ input:focus-visible {
     outline: 2px solid #0056b3;
     outline-offset: 2px;
 }
+
+/* Input Helper Text */
+.help-text {
+    display: block;
+    font-size: 0.85em;
+    color: #555;
+    margin-top: 4px;
+}
+
+/* Invalid Input State */
+input:invalid {
+    border: 1px solid #721c24;
+    background-color: #f8d7da;
+}
