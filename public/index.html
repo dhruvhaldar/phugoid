@@ -20,11 +20,13 @@
             <form id="flight-controls">
                 <div class="input-group">
                     <label for="velocity">Velocity (m/s)</label>
-                    <input type="number" id="velocity" value="51.44" step="any" min="0.1" required>
+                    <input type="number" id="velocity" value="51.44" step="any" min="0.1" required aria-describedby="velocity-help">
+                    <small id="velocity-help" class="help-text">Min: 0.1 m/s (Positive value)</small>
                 </div>
                 <div class="input-group">
                     <label for="altitude">Altitude (m)</label>
-                    <input type="number" id="altitude" value="1524" step="any" min="-500" max="50000" required>
+                    <input type="number" id="altitude" value="1524" step="any" min="-500" max="50000" required aria-describedby="altitude-help">
+                    <small id="altitude-help" class="help-text">Range: -500 to 50,000 m</small>
                 </div>
                 <div id="error-message" class="error-message" role="alert" aria-live="assertive"></div>
                 <button type="submit" id="calculate-btn">Calculate Trim & Stability</button>
