@@ -27,7 +27,10 @@ def equations_of_motion(t, state, aircraft, control):
     x, y, z = state[9:12] # z is positive down (altitude = -z)
 
     # Performance optimization: use math module for scalars (10x faster than numpy ufuncs)
-    if np.ndim(state) == 1:
+    # Check for list/tuple first to avoid slow np.ndim(list)
+    is_scalar = isinstance(state, (list, tuple)) or np.ndim(state) == 1
+
+    if is_scalar:
         sin = math.sin
         cos = math.cos
         atan2 = math.atan2
@@ -71,7 +74,7 @@ def equations_of_motion(t, state, aircraft, control):
     V = sqrt(u**2 + v**2 + w**2)
 
     # Avoid division by zero
-    if np.ndim(state) == 1:
+    if is_scalar:
         if V < 0.1: V = 0.1
     else:
         V = np.maximum(V, 0.1)
@@ -84,7 +87,7 @@ def equations_of_motion(t, state, aircraft, control):
     # Optimized beta calculation
     arg_beta = v / V
 
-    if np.ndim(state) == 1:
+    if is_scalar:
         if arg_beta < -1.0: arg_beta = -1.0
         elif arg_beta > 1.0: arg_beta = 1.0
         beta = asin(float(arg_beta))

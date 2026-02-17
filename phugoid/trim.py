@@ -43,9 +43,11 @@ class TrimSolver:
             w = velocity * np.sin(alpha)
 
             # State: [u, v, w, p, q, r, phi, theta, psi, x, y, z]
-            state = np.array([u, 0, w, 0, 0, 0, 0, theta, 0, 0, 0, -altitude])
+            # Optimization: Use list instead of np.array to avoid creation overhead
+            # equations_of_motion handles lists efficiently now
+            state = [u, 0, w, 0, 0, 0, 0, theta, 0, 0, 0, -altitude]
             # Control: [de, da, dr, dt]
-            control = np.array([elevator, 0, 0, throttle])
+            control = [elevator, 0, 0, throttle]
 
             derivs = equations_of_motion(0, state, self.aircraft, control)
 
