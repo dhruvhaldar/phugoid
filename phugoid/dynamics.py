@@ -26,13 +26,27 @@ def equations_of_motion(t, state, aircraft, control):
     phi, theta, psi = state[6:9]
     x, y, z = state[9:12] # z is positive down (altitude = -z)
 
+    # Performance optimization: use math module for scalars (10x faster than numpy ufuncs)
+    if np.ndim(state) == 1:
+        sin = math.sin
+        cos = math.cos
+        atan2 = math.atan2
+        sqrt = math.sqrt
+        asin = math.asin
+    else:
+        sin = np.sin
+        cos = np.cos
+        atan2 = np.arctan2
+        sqrt = np.sqrt
+        asin = np.arcsin
+
     # Pre-calculate trigonometric functions
-    c_th = np.cos(theta)
-    s_th = np.sin(theta)
-    c_ph = np.cos(phi)
-    s_ph = np.sin(phi)
-    c_ps = np.cos(psi)
-    s_ps = np.sin(psi)
+    c_th = cos(theta)
+    s_th = sin(theta)
+    c_ph = cos(phi)
+    s_ph = sin(phi)
+    c_ps = cos(psi)
+    s_ps = sin(psi)
 
     # Unpack control
     delta_e, delta_a, delta_r, throttle = control
@@ -54,22 +68,28 @@ def equations_of_motion(t, state, aircraft, control):
     T, P, rho = atmosphere(-z)
 
     # Airspeed
-    V = np.sqrt(u**2 + v**2 + w**2)
-    if V < 0.1: V = 0.1 # Avoid division by zero
+    V = sqrt(u**2 + v**2 + w**2)
+
+    # Avoid division by zero
+    if np.ndim(state) == 1:
+        if V < 0.1: V = 0.1
+    else:
+        V = np.maximum(V, 0.1)
 
     # Aerodynamic Angles
-    alpha = np.arctan2(w, u)
-    s_alpha = np.sin(alpha)
-    c_alpha = np.cos(alpha)
+    alpha = atan2(w, u)
+    s_alpha = sin(alpha)
+    c_alpha = cos(alpha)
 
-    # Optimized beta calculation for scalars (avoids expensive np.clip/arcsin overhead)
+    # Optimized beta calculation
     arg_beta = v / V
-    if isinstance(arg_beta, (int, float, np.number)):
+
+    if np.ndim(state) == 1:
         if arg_beta < -1.0: arg_beta = -1.0
         elif arg_beta > 1.0: arg_beta = 1.0
-        beta = math.asin(float(arg_beta))
+        beta = asin(float(arg_beta))
     else:
-        beta = np.arcsin(np.clip(arg_beta, -1, 1))
+        beta = asin(np.clip(arg_beta, -1, 1))
 
     # Dynamic Pressure & Common terms
     q_bar = 0.5 * rho * V**2
