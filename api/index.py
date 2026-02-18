@@ -23,7 +23,7 @@ class SecureHeadersMiddleware(BaseHTTPMiddleware):
         # Also allowing Plotly and Three.js CDNs
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.plot.ly https://cdnjs.cloudflare.com; "
+            "script-src 'self' https://cdn.plot.ly https://cdnjs.cloudflare.com; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data:; "
             "connect-src 'self'"

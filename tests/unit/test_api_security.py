@@ -51,4 +51,8 @@ def test_security_headers():
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
     assert "Content-Security-Policy" in response.headers
-    assert "script-src 'self' 'unsafe-inline'" in response.headers["Content-Security-Policy"]
+    csp = response.headers["Content-Security-Policy"]
+    assert "script-src 'self' https://cdn.plot.ly https://cdnjs.cloudflare.com;" in csp
+    # Ensure unsafe-inline is NOT in script-src
+    script_src = csp.split("script-src")[1].split(";")[0]
+    assert "'unsafe-inline'" not in script_src
