@@ -17,7 +17,9 @@ def equations_of_motion(t, state, aircraft, control):
         control (np.ndarray): Control inputs [delta_e, delta_a, delta_r, throttle] [rad, 0-1]
 
     Returns:
-        np.ndarray: State derivative [du/dt, ..., dz/dt]
+        np.ndarray or list: State derivative [du/dt, ..., dz/dt].
+                            Returns list if input state is list/tuple (for performance),
+                            otherwise returns np.ndarray.
     """
 
     # Unpack state
@@ -28,7 +30,8 @@ def equations_of_motion(t, state, aircraft, control):
 
     # Performance optimization: use math module for scalars (10x faster than numpy ufuncs)
     # Check for list/tuple first to avoid slow np.ndim(list)
-    is_scalar = isinstance(state, (list, tuple)) or np.ndim(state) == 1
+    is_list = isinstance(state, (list, tuple))
+    is_scalar = is_list or np.ndim(state) == 1
 
     if is_scalar:
         sin = math.sin
@@ -216,4 +219,11 @@ def equations_of_motion(t, state, aircraft, control):
     y_dot = (c_th*s_ps)*u + (s_ph*s_th*s_ps + c_ph*c_ps)*v + (c_ph*s_th*s_ps - s_ph*c_ps)*w
     z_dot = (-s_th)*u + (s_ph*c_th)*v + (c_ph*c_th)*w
 
-    return np.array([udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot])
+    result = [udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot]
+
+    # Return list if input was list (TrimSolver optimization)
+    # Avoids np.array creation overhead (~1.3us) in tight loops
+    if is_list:
+        return result
+    else:
+        return np.array(result)
