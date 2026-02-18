@@ -17,7 +17,12 @@
     <main>
         <section id="controls">
             <h2>Flight Conditions</h2>
+            <div id="status-region" class="sr-only" role="status" aria-live="polite"></div>
             <form id="flight-controls">
+                <div class="presets">
+                    <button type="button" class="preset-btn" data-v="51.44" data-h="1524">Cruise (100kts)</button>
+                    <button type="button" class="preset-btn" data-v="33.4" data-h="300">Approach (65kts)</button>
+                </div>
                 <div class="input-group">
                     <label for="velocity">Velocity (m/s)</label>
                     <input type="number" id="velocity" value="51.44" step="any" min="0.1" required aria-describedby="velocity-help">
@@ -69,6 +74,14 @@
     <script src="pole_plot.js"></script>
     <script src="aircraft_viewer.js"></script>
     <script>
+        // Preset Buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('velocity').value = btn.dataset.v;
+                document.getElementById('altitude').value = btn.dataset.h;
+            });
+        });
+
         document.getElementById('flight-controls').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('calculate-btn');
@@ -77,6 +90,7 @@
 
             // Reset state
             errorDiv.textContent = '';
+            document.getElementById('status-region').textContent = '';
             btn.classList.add('loading');
             btn.disabled = true;
             btn.textContent = 'Calculating...';
@@ -140,6 +154,9 @@
                     li.textContent = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)}`;
                     latList.appendChild(li);
                 });
+
+                // Announce success to screen readers
+                document.getElementById('status-region').textContent = 'Calculation complete. Results updated.';
             } catch (err) {
                 errorDiv.textContent = err.message || 'An unexpected error occurred';
             } finally {
