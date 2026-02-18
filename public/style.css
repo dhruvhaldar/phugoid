@@ -137,3 +137,46 @@ input:invalid {
     border: 1px solid #721c24;
     background-color: #f8d7da;
 }
+
+/* Palette UX Enhancements */
+
+/* Screen Reader Only Utility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Preset Buttons */
+.presets {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.preset-btn {
+    padding: 6px 12px;
+    font-size: 0.9em;
+    background-color: #fff;
+    color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.preset-btn:hover {
+    background-color: #e6f2ff;
+}
+
+.preset-btn:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+    background-color: #e6f2ff;
+}
