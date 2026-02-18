@@ -19,3 +19,7 @@
 Additionally, `np.ndim(list)` is significantly slower (~7us) than `np.ndim(array)` (~0.1us).
 By constructing lists in the solver and avoiding `np.ndim` checks on lists (via `isinstance`), we can achieve ~4x speedup in dynamics calls within the solver.
 **Action:** In iterative solvers, construct and pass Python lists for state/control vectors if the underlying physics function supports list inputs efficiently. Optimize physics functions to check `isinstance(x, (list, tuple))` before calling `np.ndim`.
+
+## 2026-XX-XX - [Return Type Optimization in Scalar Paths]
+**Learning:** In tight loops (like TrimSolver), avoiding the conversion of result lists back to `np.ndarray` saves ~1.5us per call (~18% speedup). However, this changes the return type based on input type (List -> List, Array -> Array), which is a potential API hazard.
+**Action:** When implementing this optimization, ensure the caller (e.g. Solver) handles the list return type (e.g. via unpacking) and explicitly document the behavior in the function docstring.
