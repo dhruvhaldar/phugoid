@@ -50,9 +50,18 @@ def test_security_headers():
     # These headers are added by our middleware
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
+    assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
+    assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
+    assert response.headers["Permissions-Policy"] == "geolocation=(), microphone=(), camera=()"
+
     assert "Content-Security-Policy" in response.headers
     csp = response.headers["Content-Security-Policy"]
     assert "script-src 'self' https://cdn.plot.ly https://cdnjs.cloudflare.com;" in csp
+    assert "object-src 'none'" in csp
+    assert "base-uri 'self'" in csp
+    assert "form-action 'self'" in csp
+    assert "frame-ancestors 'none'" in csp
+
     # Ensure unsafe-inline is NOT in script-src
     script_src = csp.split("script-src")[1].split(";")[0]
     assert "'unsafe-inline'" not in script_src
