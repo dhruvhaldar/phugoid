@@ -180,3 +180,9 @@ input:invalid {
     outline-offset: 2px;
     background-color: #e6f2ff;
 }
+
+.preset-btn.selected {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #0056b3;
+}
