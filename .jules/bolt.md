@@ -23,3 +23,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-XX-XX - [Return Type Optimization in Scalar Paths]
 **Learning:** In tight loops (like TrimSolver), avoiding the conversion of result lists back to `np.ndarray` saves ~1.5us per call (~18% speedup). However, this changes the return type based on input type (List -> List, Array -> Array), which is a potential API hazard.
 **Action:** When implementing this optimization, ensure the caller (e.g. Solver) handles the list return type (e.g. via unpacking) and explicitly document the behavior in the function docstring.
+
+## 2025-10-27 - Vectorization vs Scalar Overhead in Small Matrices
+**Learning:** For small matrix sizes (N=12), the overhead of NumPy broadcasting and array creation significantly outweighs the benefits of vectorized operations compared to iterating with Python's optimized `math` module scalar path.
+**Action:** When optimizing physics calculations with small state vectors (e.g., flight dynamics), prioritize scalar loops with native Python types over NumPy vectorization if the inner loop is computationally intensive but the batch size is small.

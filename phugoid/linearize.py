@@ -18,6 +18,27 @@ class Linearizer:
 
         self.A, self.B = self.compute_jacobian()
 
+    def _compute_perturbations(self, X_batch, U_batch):
+        """
+        Computes f(x, u) for each column in X_batch and U_batch.
+        Optimized to use the scalar path of equations_of_motion by converting columns to Python lists.
+        This avoids NumPy broadcasting overhead for small matrices (N=12) and leverages faster math module operations.
+        """
+        # Convert to list of lists (transposed so we iterate over columns)
+        # Passing lists to equations_of_motion triggers the optimized scalar path (using math module)
+        X_list = X_batch.T.tolist()
+        U_list = U_batch.T.tolist()
+
+        f_list = [
+            equations_of_motion(0, x, self.aircraft, u)
+            for x, u in zip(X_list, U_list)
+        ]
+
+        # Convert back to (12, N) array
+        # f_list is a list of N result vectors (each length 12)
+        # np.array(f_list) -> shape (N, 12). We need (12, N), so transpose.
+        return np.array(f_list).T
+
     def compute_jacobian(self, step=1e-4):
         n_state = 12
         n_control = 4
@@ -25,21 +46,16 @@ class Linearizer:
         # Compute A matrix (df/dx)
         # Vectorized perturbation of state
         # Create (12, 12) matrix where each column is x_trim with perturbation on diagonal
-        # Using broadcasting for speed: x_trim[:, None] is (12, 1), step*eye is (12, 12)
         eye_step = np.eye(n_state) * step
         X_plus = self.x_trim[:, None] + eye_step
         X_minus = self.x_trim[:, None] - eye_step
 
         # Broadcast control (must be broadcasted to (4, 12) to match state batch size)
-        # Use broadcasting trick: (4, 1) + (1, 12) -> (4, 12)
-        # We use empty array of zeros to trigger broadcasting without copying data explicitly if possible?
-        # But we need concrete array for equations_of_motion.
-        # u_trim[:, None] + zeros((1, 12)) creates array
         U_broadcast = self.u_trim[:, None] + np.zeros((1, n_state))
 
-        # Call equations of motion (vectorized)
-        f_plus = equations_of_motion(0, X_plus, self.aircraft, U_broadcast)
-        f_minus = equations_of_motion(0, X_minus, self.aircraft, U_broadcast)
+        # Call equations of motion (optimized)
+        f_plus = self._compute_perturbations(X_plus, U_broadcast)
+        f_minus = self._compute_perturbations(X_minus, U_broadcast)
 
         # f_plus is (12, 12) matrix where column i is f(x + dx_i)
         A = (f_plus - f_minus) / (2 * step)
@@ -51,11 +67,10 @@ class Linearizer:
         U_minus = self.u_trim[:, None] - eye_step_u
 
         # Broadcast state (must be broadcasted to (12, 4) to match control batch size)
-        # (12, 1) + (1, 4) -> (12, 4)
         X_broadcast = self.x_trim[:, None] + np.zeros((1, n_control))
 
-        f_plus = equations_of_motion(0, X_broadcast, self.aircraft, U_plus)
-        f_minus = equations_of_motion(0, X_broadcast, self.aircraft, U_minus)
+        f_plus = self._compute_perturbations(X_broadcast, U_plus)
+        f_minus = self._compute_perturbations(X_broadcast, U_minus)
 
         B = (f_plus - f_minus) / (2 * step)
 
