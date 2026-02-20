@@ -5,3 +5,7 @@
 ## 2026-02-15 - HTML Step Attribute & Validation
 **Learning:** Using `step="100"` for UI convenience (spinner increments) inadvertently blocks valid inputs like "1524" due to native browser validation.
 **Action:** Use `step="any"` for physics inputs where precise values are allowed, even if large steps are convenient for spinners.
+
+## 2026-02-16 - Preset Button Accessibility
+**Learning:** Preset buttons that update form fields act as toggle/radio inputs but lacked semantic state for screen readers. Visual `.selected` class is insufficient.
+**Action:** Use `aria-pressed` attributes on preset buttons and sync them with the visual selection state to ensure accessibility.
