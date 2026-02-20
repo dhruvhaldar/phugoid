@@ -1,10 +1,32 @@
 // Preset Buttons
-document.querySelectorAll('.preset-btn').forEach(btn => {
+const presetBtns = document.querySelectorAll('.preset-btn');
+const velocityInput = document.getElementById('velocity');
+const altitudeInput = document.getElementById('altitude');
+const statusRegion = document.getElementById('status-region');
+
+presetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        document.getElementById('velocity').value = btn.dataset.v;
-        document.getElementById('altitude').value = btn.dataset.h;
+        velocityInput.value = btn.dataset.v;
+        altitudeInput.value = btn.dataset.h;
+
+        // Visual feedback
+        presetBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+
+        // Announce to screen readers
+        if (statusRegion) {
+            statusRegion.textContent = `Preset ${btn.textContent} selected`;
+        }
     });
 });
+
+// Clear selection on manual input
+const clearPresetSelection = () => {
+    presetBtns.forEach(b => b.classList.remove('selected'));
+};
+
+velocityInput.addEventListener('input', clearPresetSelection);
+altitudeInput.addEventListener('input', clearPresetSelection);
 
 document.getElementById('flight-controls').addEventListener('submit', async (e) => {
     e.preventDefault();
