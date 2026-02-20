@@ -10,8 +10,12 @@ presetBtns.forEach(btn => {
         altitudeInput.value = btn.dataset.h;
 
         // Visual feedback
-        presetBtns.forEach(b => b.classList.remove('selected'));
+        presetBtns.forEach(b => {
+            b.classList.remove('selected');
+            b.setAttribute('aria-pressed', 'false');
+        });
         btn.classList.add('selected');
+        btn.setAttribute('aria-pressed', 'true');
 
         // Announce to screen readers
         if (statusRegion) {
@@ -22,7 +26,10 @@ presetBtns.forEach(btn => {
 
 // Clear selection on manual input
 const clearPresetSelection = () => {
-    presetBtns.forEach(b => b.classList.remove('selected'));
+    presetBtns.forEach(b => {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+    });
 };
 
 velocityInput.addEventListener('input', clearPresetSelection);
