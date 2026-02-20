@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from api.index import app
+from api.index import app, request_counts
 import pytest
 
 client = TestClient(app)
@@ -65,3 +65,22 @@ def test_security_headers():
     # Ensure unsafe-inline is NOT in script-src
     script_src = csp.split("script-src")[1].split(";")[0]
     assert "'unsafe-inline'" not in script_src
+
+def test_rate_limiting():
+    # Clear previous request counts to ensure clean state
+    request_counts.clear()
+
+    # Send 100 requests (allowed)
+    for _ in range(100):
+        response = client.get("/api/health")
+        if response.status_code != 200:
+             print(f"Failed at request {_}: {response.status_code}")
+        assert response.status_code == 200
+
+    # Send 101st request (should be blocked)
+    response = client.get("/api/health")
+    assert response.status_code == 429
+    assert response.json() == {"detail": "Too many requests. Please try again later."}
+
+    # Ensure headers are present even on 429
+    assert "X-Frame-Options" in response.headers

@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
+import time
+from collections import defaultdict
 import numpy as np
 from phugoid.aerodynamics import Cessna172
 from phugoid.trim import TrimSolver
@@ -12,6 +14,36 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
+
+# Global storage for rate limiting (IP -> list of timestamps)
+request_counts = defaultdict(list)
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Get client IP
+        # Handle X-Forwarded-For for proxies (like Vercel)
+        forwarded = request.headers.get("x-forwarded-for")
+        if forwarded:
+            client_ip = forwarded.split(",")[0]
+        else:
+            client_ip = request.client.host if request.client else "unknown"
+
+        now = time.time()
+        # Clean up old timestamps (older than 60s)
+        # We only keep timestamps within the last 60 seconds
+        request_counts[client_ip] = [t for t in request_counts[client_ip] if now - t < 60]
+
+        # Check limit (100 requests per minute)
+        if len(request_counts[client_ip]) >= 100:
+            return JSONResponse(status_code=429, content={"detail": "Too many requests. Please try again later."})
+
+        request_counts[client_ip].append(now)
+
+        # Basic cleanup to prevent memory exhaustion from IP spoofing
+        if len(request_counts) > 10000:
+            request_counts.clear()
+
+        return await call_next(request)
 
 # Security Middleware
 class SecureHeadersMiddleware(BaseHTTPMiddleware):
@@ -38,6 +70,7 @@ class SecureHeadersMiddleware(BaseHTTPMiddleware):
         )
         return response
 
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(SecureHeadersMiddleware)
 
 class AircraftParameters(BaseModel):
