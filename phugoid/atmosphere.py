@@ -54,7 +54,9 @@ def atmosphere(altitude):
     # or handle it if needed. For flight mechanics of typical GA aircraft,
     # troposphere is sufficient.
 
-    if isinstance(altitude, (int, float)):
+    # Handle both Python scalars and NumPy scalars (e.g. np.float64)
+    # This ensures calls from solvers using numpy arrays as scalars still hit the fast path
+    if isinstance(altitude, (int, float)) or (isinstance(altitude, np.floating) and altitude.ndim == 0):
         # Scalar optimization: caching and pre-calc constants
         # Convert to float to ensure cache consistency (e.g. 1000 vs 1000.0)
         return _atmosphere_scalar(float(altitude))
