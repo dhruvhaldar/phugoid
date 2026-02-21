@@ -23,3 +23,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-XX-XX - [Return Type Optimization in Scalar Paths]
 **Learning:** In tight loops (like TrimSolver), avoiding the conversion of result lists back to `np.ndarray` saves ~1.5us per call (~18% speedup). However, this changes the return type based on input type (List -> List, Array -> Array), which is a potential API hazard.
 **Action:** When implementing this optimization, ensure the caller (e.g. Solver) handles the list return type (e.g. via unpacking) and explicitly document the behavior in the function docstring.
+
+## 2026-XX-XX - [Numpy Scalar Overhead in Core Physics Loop]
+**Learning:** Lists containing Numpy scalars (e.g. `[np.float64(0.0), ...]`) passed to physics functions defeat `math` module optimizations because `type(np.float64) is not float` (though `isinstance` passes). Explicitly converting these to native `float` using list comprehension yields ~30-40% speedup in `equations_of_motion`.
+**Action:** In core physics loops, add a fast check (e.g. `type(state[0]) is not float`) and convert inputs to native floats immediately if detected. Ensure return type semantics (Array vs List) are preserved to avoid breaking callers.
