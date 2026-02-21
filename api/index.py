@@ -30,18 +30,32 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         now = time.time()
         # Clean up old timestamps (older than 60s)
-        # We only keep timestamps within the last 60 seconds
-        request_counts[client_ip] = [t for t in request_counts[client_ip] if now - t < 60]
+        # Handle LRU: Remove from dict to re-insert at end if exists
+        if client_ip in request_counts:
+            timestamps = request_counts.pop(client_ip)
+        else:
+            timestamps = []
+
+        # Filter timestamps
+        timestamps = [t for t in timestamps if now - t < 60]
 
         # Check limit (100 requests per minute)
-        if len(request_counts[client_ip]) >= 100:
+        if len(timestamps) >= 100:
+            # Re-insert before returning
+            request_counts[client_ip] = timestamps
             return JSONResponse(status_code=429, content={"detail": "Too many requests. Please try again later."})
 
-        request_counts[client_ip].append(now)
+        timestamps.append(now)
+        request_counts[client_ip] = timestamps
 
         # Basic cleanup to prevent memory exhaustion from IP spoofing
-        if len(request_counts) > 10000:
-            request_counts.clear()
+        # Evict oldest entries (LRU) instead of clearing all
+        while len(request_counts) > 10000:
+            try:
+                # Remove the first item (oldest insertion)
+                request_counts.pop(next(iter(request_counts)))
+            except StopIteration:
+                break
 
         return await call_next(request)
 
