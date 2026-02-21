@@ -1,11 +1,5 @@
-## 2026-02-14 - Button Loading State & Error Handling
-**Learning:** Users lack visibility into async operations on the "Calculate" button, leading to potential frustration or double-submission.
-**Action:** Implemented a loading state (disabled + spinner) and a dedicated error message container with `role="alert"` for accessibility. This pattern should be standard for all async form submissions.
+# Palette's Journal
 
-## 2026-02-15 - HTML Step Attribute & Validation
-**Learning:** Using `step="100"` for UI convenience (spinner increments) inadvertently blocks valid inputs like "1524" due to native browser validation.
-**Action:** Use `step="any"` for physics inputs where precise values are allowed, even if large steps are convenient for spinners.
-
-## 2026-02-16 - Preset Button Accessibility
-**Learning:** Preset buttons that update form fields act as toggle/radio inputs but lacked semantic state for screen readers. Visual `.selected` class is insufficient.
-**Action:** Use `aria-pressed` attributes on preset buttons and sync them with the visual selection state to ensure accessibility.
+## 2025-10-26 - Empty State Pattern
+**Learning:** Users are often overwhelmed by empty dashes or "0" values on initial load. Replacing these with a dedicated "Empty State" container that provides a clear call-to-action ("Ready for Analysis") significantly improves the initial impression and guides the user.
+**Action:** When designing data-heavy views, always consider the "zero data" state. Hide result containers until data is available, and use the space to educate or guide the user.

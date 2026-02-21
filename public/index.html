@@ -38,7 +38,17 @@
             </form>
         </section>
 
-        <section id="results">
+        <section id="empty-state" class="empty-state">
+            <div class="empty-content">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <h2>Ready for Analysis</h2>
+                <p>Adjust the flight conditions above and calculate to view the trim state and stability modes.</p>
+            </div>
+        </section>
+
+        <section id="results" class="hidden">
             <div id="trim-results">
                 <h2>Trim State</h2>
                 <div class="card">
@@ -61,7 +71,7 @@
             </div>
         </section>
 
-        <section id="visualization">
+        <section id="visualization" class="hidden">
             <h2>Aircraft Attitude</h2>
             <div id="3d-viewer" role="img" aria-label="3D visualization of aircraft attitude"></div>
         </section>

@@ -186,3 +186,37 @@ input:invalid {
     color: #fff;
     border-color: #0056b3;
 }
+
+/* Empty State */
+.hidden {
+    display: none !important;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    background-color: #fff;
+    /* Reusing section styles but confirming them */
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.empty-content svg {
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+.empty-content h2 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.empty-content p {
+    color: #666;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
