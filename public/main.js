@@ -108,6 +108,14 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
             latList.appendChild(li);
         });
 
+        // UX: Show Results, Hide Empty State
+        document.getElementById('results').classList.remove('hidden');
+        document.getElementById('visualization').classList.remove('hidden');
+        document.getElementById('empty-state').classList.add('hidden');
+
+        // UX: Trigger resize to ensure charts render correctly in now-visible containers
+        window.dispatchEvent(new Event('resize'));
+
         // Announce success to screen readers
         document.getElementById('status-region').textContent = 'Calculation complete. Results updated.';
     } catch (err) {
