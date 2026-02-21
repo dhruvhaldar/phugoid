@@ -34,6 +34,13 @@ class Linearizer:
 
         # Compute A matrix (df/dx) - perturbation of state
         for i in range(n_state):
+            # Optimization: Skip horizontal position states (x=9, y=10)
+            # The equations of motion for a flat-earth model with uniform atmosphere
+            # are independent of x and y position. The derivatives are exactly zero.
+            # This saves 4 expensive calls to equations_of_motion (approx 16% speedup).
+            if i in [9, 10]:
+                continue
+
             # Perturb state i
             x_plus = list(x_trim_list) # Shallow copy is enough for list of floats
             x_plus[i] += step
