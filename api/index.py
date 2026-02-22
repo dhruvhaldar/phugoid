@@ -24,7 +24,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Handle X-Forwarded-For for proxies (like Vercel)
         forwarded = request.headers.get("x-forwarded-for")
         if forwarded:
-            client_ip = forwarded.split(",")[0]
+            # Vercel appends the client IP to the end of the list.
+            # We take the last IP to prevent spoofing by clients adding their own headers.
+            client_ip = forwarded.split(",")[-1].strip()
         else:
             client_ip = request.client.host if request.client else "unknown"
 
@@ -106,7 +108,7 @@ class AircraftParameters(BaseModel):
     Cm0: float = -0.02
 
 class TrimRequest(BaseModel):
-    velocity: float = Field(..., gt=0, description="Velocity in m/s (must be positive)")
+    velocity: float = Field(..., gt=0, le=1000, description="Velocity in m/s (must be positive, max 1000)")
     altitude: float = Field(..., ge=-500, le=50000, description="Altitude in meters")
     flight_path_angle: float = 0.0
     aircraft: Optional[AircraftParameters] = None
