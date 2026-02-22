@@ -32,12 +32,16 @@ class Linearizer:
 
         A = np.zeros((n_state, n_state))
 
+        # Calculate nominal state derivative once (f(x))
+        # Reuse this for forward difference calculation to save ~50% of EoM calls
+        f_nominal = equations_of_motion(0, x_trim_list, self.aircraft, u_trim_list)
+
         # Compute A matrix (df/dx) - perturbation of state
         for i in range(n_state):
             # Optimization: Skip horizontal position states (x=9, y=10)
             # The equations of motion for a flat-earth model with uniform atmosphere
             # are independent of x and y position. The derivatives are exactly zero.
-            # This saves 4 expensive calls to equations_of_motion (approx 16% speedup).
+            # This saves 2 expensive calls to equations_of_motion (approx 14% additional speedup).
             if i in [9, 10]:
                 continue
 
@@ -45,17 +49,13 @@ class Linearizer:
             x_plus = list(x_trim_list) # Shallow copy is enough for list of floats
             x_plus[i] += step
 
-            x_minus = list(x_trim_list)
-            x_minus[i] -= step
-
             # Call scalar EoM
             # equations_of_motion returns list for list input
             f_plus = equations_of_motion(0, x_plus, self.aircraft, u_trim_list)
-            f_minus = equations_of_motion(0, x_minus, self.aircraft, u_trim_list)
 
             # Fill column i of A
-            # We can't vector subtract lists directly, so use list comp
-            col = [(fp - fm) / (2 * step) for fp, fm in zip(f_plus, f_minus)]
+            # Forward difference: (f(x+h) - f(x)) / h
+            col = [(fp - fm) / step for fp, fm in zip(f_plus, f_nominal)]
             A[:, i] = col
 
         B = np.zeros((n_state, n_control))
@@ -65,13 +65,9 @@ class Linearizer:
             u_plus = list(u_trim_list)
             u_plus[i] += step
 
-            u_minus = list(u_trim_list)
-            u_minus[i] -= step
-
             f_plus = equations_of_motion(0, x_trim_list, self.aircraft, u_plus)
-            f_minus = equations_of_motion(0, x_trim_list, self.aircraft, u_minus)
 
-            col = [(fp - fm) / (2 * step) for fp, fm in zip(f_plus, f_minus)]
+            col = [(fp - fm) / step for fp, fm in zip(f_plus, f_nominal)]
             B[:, i] = col
 
         return A, B
