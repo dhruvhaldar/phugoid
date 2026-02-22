@@ -126,3 +126,52 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         btn.textContent = originalText;
     }
 });
+
+// Copy Trim Results
+const copyBtn = document.getElementById('copy-trim-btn');
+if (copyBtn) {
+    const originalHtml = copyBtn.innerHTML;
+
+    copyBtn.addEventListener('click', async () => {
+        const alpha = document.getElementById('trim-alpha').textContent;
+        const elevator = document.getElementById('trim-elevator').textContent;
+        const throttle = document.getElementById('trim-throttle').textContent;
+        const theta = document.getElementById('trim-theta').textContent;
+
+        const text = `Trim State:
+Alpha: ${alpha} deg
+Elevator: ${elevator} deg
+Throttle: ${throttle} %
+Theta: ${theta} deg`;
+
+        try {
+            await navigator.clipboard.writeText(text);
+
+            // Visual Feedback
+            copyBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="btn-text">Copied!</span>
+            `;
+            copyBtn.classList.add('success');
+            copyBtn.setAttribute('aria-label', 'Copied to clipboard');
+
+            // Revert after 2 seconds
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHtml;
+                copyBtn.classList.remove('success');
+                copyBtn.setAttribute('aria-label', 'Copy trim results to clipboard');
+            }, 2000);
+
+            // Screen reader announcement
+            const statusRegion = document.getElementById('status-region');
+            if (statusRegion) {
+                statusRegion.textContent = 'Trim results copied to clipboard';
+            }
+
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    });
+}

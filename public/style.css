@@ -220,3 +220,54 @@ input:invalid {
     margin: 0 auto;
     line-height: 1.5;
 }
+
+/* Copy Trim Results Button */
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.results-header h2 {
+    margin: 0;
+}
+
+.icon-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.icon-btn:hover {
+    background-color: #f8f9fa;
+    color: #333;
+    border-color: #ccc;
+}
+
+.icon-btn:focus-visible {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+    background-color: #f8f9fa;
+}
+
+.icon-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Success State for Copy Button */
+.icon-btn.success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
