@@ -3,6 +3,24 @@ const presetBtns = document.querySelectorAll('.preset-btn');
 const velocityInput = document.getElementById('velocity');
 const altitudeInput = document.getElementById('altitude');
 const statusRegion = document.getElementById('status-region');
+const velocityDisplay = document.getElementById('velocity-unit-display');
+const altitudeDisplay = document.getElementById('altitude-unit-display');
+
+const updateUnits = () => {
+    const v = parseFloat(velocityInput.value);
+    if (!isNaN(v) && v > 0) {
+        velocityDisplay.textContent = `(≈ ${Math.round(v * 1.94384)} kts)`;
+    } else {
+        velocityDisplay.textContent = '';
+    }
+
+    const h = parseFloat(altitudeInput.value);
+    if (!isNaN(h)) {
+        altitudeDisplay.textContent = `(≈ ${Math.round(h * 3.28084)} ft)`;
+    } else {
+        altitudeDisplay.textContent = '';
+    }
+};
 
 presetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -16,6 +34,8 @@ presetBtns.forEach(btn => {
         });
         btn.classList.add('selected');
         btn.setAttribute('aria-pressed', 'true');
+
+        updateUnits();
 
         // Announce to screen readers
         if (statusRegion) {
@@ -34,6 +54,12 @@ const clearPresetSelection = () => {
 
 velocityInput.addEventListener('input', clearPresetSelection);
 altitudeInput.addEventListener('input', clearPresetSelection);
+
+velocityInput.addEventListener('input', updateUnits);
+altitudeInput.addEventListener('input', updateUnits);
+
+// Initialize
+updateUnits();
 
 document.getElementById('flight-controls').addEventListener('submit', async (e) => {
     e.preventDefault();

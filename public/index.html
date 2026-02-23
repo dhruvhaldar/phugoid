@@ -24,12 +24,12 @@
                     <button type="button" class="preset-btn" data-v="33.4" data-h="300" aria-pressed="false">Approach (65kts)</button>
                 </div>
                 <div class="input-group">
-                    <label for="velocity">Velocity (m/s)</label>
+                    <label for="velocity">Velocity (m/s) <span id="velocity-unit-display" class="unit-hint"></span></label>
                     <input type="number" id="velocity" value="51.44" step="any" min="0.1" required aria-describedby="velocity-help">
                     <small id="velocity-help" class="help-text">Min: 0.1 m/s (Positive value)</small>
                 </div>
                 <div class="input-group">
-                    <label for="altitude">Altitude (m)</label>
+                    <label for="altitude">Altitude (m) <span id="altitude-unit-display" class="unit-hint"></span></label>
                     <input type="number" id="altitude" value="1524" step="any" min="-500" max="50000" required aria-describedby="altitude-help">
                     <small id="altitude-help" class="help-text">Range: -500 to 50,000 m</small>
                 </div>

@@ -33,6 +33,13 @@ label {
     margin-bottom: 5px;
 }
 
+.unit-hint {
+    color: #666;
+    font-weight: normal;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
 input {
     width: 100%;
     padding: 8px;
