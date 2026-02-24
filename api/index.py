@@ -5,13 +5,13 @@ from typing import List, Optional
 import time
 from collections import defaultdict
 import numpy as np
+import os
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 from phugoid.aerodynamics import Cessna172
 from phugoid.trim import TrimSolver
 from phugoid.linearize import Linearizer
 from phugoid.modes import calculate_damping_ratio, calculate_natural_frequency
-import os
-from fastapi.staticfiles import StaticFiles
-from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
 

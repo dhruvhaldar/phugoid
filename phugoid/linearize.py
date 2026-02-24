@@ -99,6 +99,4 @@ class Linearizer:
         return evals
 
     def plot_pole_map(self):
-        # This will be handled by the frontend usually, but if we need a static plot:
-        # For now, just print or return data
         pass

@@ -1,8 +1,6 @@
 fastapi
 uvicorn
 numpy
-scipy
 pytest
 requests
-matplotlib
 httpx

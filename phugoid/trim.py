@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from scipy.optimize import root
 from phugoid.dynamics import equations_of_motion
 
 class TrimState:
@@ -23,23 +22,10 @@ class TrimSolver:
 
     def find_trim(self, velocity, altitude, flight_path_angle=0.0):
         """
-        Finds the trim state for steady level flight (or steady climb/descent).
-
-        Args:
-            velocity (float): True Airspeed [m/s]
-            altitude (float): Altitude [m]
-            flight_path_angle (float): Gamma [rad] (default 0 for level flight)
-
-        Returns:
-            TrimState: Object containing trim values.
+        Finds the trim state for steady level flight (or steady climb/descent)
+        using a custom Newton-Raphson solver to avoid SciPy dependency.
         """
-
-        # Unknowns: x = [alpha, elevator, throttle]
-
         def objective(x):
-            # Optimization: Convert numpy scalars to native floats
-            # This allows equations_of_motion to use the faster math module scalar path
-            # and avoid numpy overhead (approx 20% speedup per call)
             alpha = float(x[0])
             elevator = float(x[1])
             throttle = float(x[2])
@@ -48,35 +34,69 @@ class TrimSolver:
             u = velocity * math.cos(alpha)
             w = velocity * math.sin(alpha)
 
-            # State: [u, v, w, p, q, r, phi, theta, psi, x, y, z]
-            # Optimization: Use list instead of np.array to avoid creation overhead
-            # equations_of_motion handles lists efficiently now
             state = [u, 0, w, 0, 0, 0, 0, theta, 0, 0, 0, -altitude]
-            # Control: [de, da, dr, dt]
             control = [elevator, 0, 0, throttle]
 
             derivs = equations_of_motion(0, state, self.aircraft, control)
+            return np.array([derivs[0], derivs[2], derivs[4]])
 
-            # We want udot, wdot, qdot to be zero (Longitudinal trim)
-            return [derivs[0], derivs[2], derivs[4]]
+        def jacobian(x, eps=1e-5):
+            J = np.zeros((3, 3))
+            f0 = objective(x)
+            for i in range(3):
+                x_plus = list(x)
+                x_plus[i] += eps
+                f_plus = objective(x_plus)
+                J[:, i] = (f_plus - f0) / eps
+            return J, f0
 
-        # Initial guess
-        # Alpha usually small positive
-        # Elevator usually small negative (to pitch up/balance nose heavy) or positive depending on sign convention.
-        # Here elevator positive is usually TE down -> pitch down. C172 usually needs pitch up (negative elevator) if CG is fwd of AC.
-        # Throttle 0.5
-        x0 = [0.05, -0.05, 0.5]
+        # Custom Newton-Raphson solver
+        x = np.array([0.05, -0.05, 0.5])
+        max_iter = 100
+        tol = 1e-8
+        success = False
 
-        sol = root(objective, x0, method='hybr')
+        for i in range(max_iter):
+            J, f0 = jacobian(x)
+            error = np.linalg.norm(f0)
+            
+            if error < tol:
+                success = True
+                break
+                
+            try:
+                # Solve J * dx = -f0
+                dx = np.linalg.solve(J, -f0)
+                # Damping factor to prevent divergence
+                x = x + 0.5 * dx
+                
+                # Constrain throttle between 0 and 1
+                x[2] = np.clip(x[2], 0.0, 1.0)
+            except np.linalg.LinAlgError:
+                break
 
-        if not sol.success:
-             # Try another guess if first fails
-            x0 = [0.1, -0.1, 0.8]
-            sol = root(objective, x0, method='hybr')
-            if not sol.success:
-                raise RuntimeError("Trim solver failed to converge: " + sol.message)
+        if not success:
+            # Try alternate guess
+            x = np.array([0.1, -0.1, 0.8])
+            for i in range(max_iter):
+                J, f0 = jacobian(x)
+                error = np.linalg.norm(f0)
+                
+                if error < tol:
+                    success = True
+                    break
+                    
+                try:
+                    dx = np.linalg.solve(J, -f0)
+                    x = x + 0.5 * dx
+                    x[2] = np.clip(x[2], 0.0, 1.0)
+                except np.linalg.LinAlgError:
+                    break
+                    
+            if not success:
+                raise RuntimeError(f"Trim solver failed to converge. Final error: {error}")
 
-        alpha_trim, elevator_trim, throttle_trim = sol.x
+        alpha_trim, elevator_trim, throttle_trim = x
         theta_trim = alpha_trim + flight_path_angle
         u_trim = velocity * np.cos(alpha_trim)
         w_trim = velocity * np.sin(alpha_trim)
