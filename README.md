@@ -1,5 +1,11 @@
 # Phugoid
 
+[![Build Status](https://github.com/dhruvhaldar/phugoid/actions/workflows/dynamics_check.yml/badge.svg)](https://github.com/dhruvhaldar/phugoid/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Vercel](https://img.shields.io/badge/Vercel-Deploy-black)](https://vercel.com/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/badge/PyPI-1.0.0-blue)](https://pypi.org/project/phugoid/)
+
 **Phugoid** is a Python-based flight dynamics engine designed for **SD2805 Flight Mechanics**. It serves as a modern replacement for the traditional Matlab toolboxes used in aeronautical engineering.
 
 The tool provides a complete pipeline for analyzing aircraft stability: from defining aerodynamic coefficients and finding the **Trim State** (Equilibrium), to linearizing the equations of motion and visualizing the resulting **Eigenmodes** (dynamic stability).
@@ -16,13 +22,11 @@ This project strictly adheres to the course learning outcomes:
 | **Control** | *Design a basic control system* | State-space feedback control (LQR/PID) for Stability Augmentation Systems (SAS). |
 | **Simulation** | *Integrate equations in time* | RK45 integrator for trajectory analysis (e.g., response to a step elevator input). |
 
-## 🚀 Deployment (Vercel)
+## 🚀 Building and Deployment
 
 Phugoid is designed to run as a serverless analysis tool.
 
-1. **Fork** this repository.
-2. Deploy to **Vercel** (Python runtime is auto-detected).
-3. Access the **Stability Analyzer** at `https://your-phugoid.vercel.app`.
+For building the project locally, refer to [build.md](build.md).
 
 ## 📊 Artifacts & Dynamics Analysis
 
