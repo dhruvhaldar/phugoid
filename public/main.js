@@ -135,9 +135,14 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         });
 
         // UX: Show Results, Hide Empty State
-        document.getElementById('results').classList.remove('hidden');
+        const resultsSection = document.getElementById('results');
+        resultsSection.classList.remove('hidden');
         document.getElementById('visualization').classList.remove('hidden');
         document.getElementById('empty-state').classList.add('hidden');
+
+        // UX: Scroll to results and focus for accessibility
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        resultsSection.focus({ preventScroll: true });
 
         // UX: Trigger resize to ensure charts render correctly in now-visible containers
         window.dispatchEvent(new Event('resize'));
