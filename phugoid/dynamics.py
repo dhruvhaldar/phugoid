@@ -34,29 +34,36 @@ def equations_of_motion(t, state, aircraft, control):
                             otherwise returns np.ndarray.
     """
 
-    # Unpack state
-    # Optimization: Direct unpacking is significantly faster than slice unpacking (4x for lists, 2x for numpy arrays)
-    u, v, w, p, q, r, phi, theta, psi, x, y, z = state # z is positive down (altitude = -z)
-
     # Performance optimization: use math module for scalars (10x faster than numpy ufuncs)
     # Check for list/tuple first to avoid slow np.ndim(list)
     is_list = isinstance(state, (list, tuple))
     was_list = is_list # Keep track of original input type for return value
-    is_scalar = is_list or np.ndim(state) == 1
 
-    if is_scalar:
+    if is_list:
+        is_scalar = True
+        # Unpack state
+        # Optimization: Direct unpacking is significantly faster than slice unpacking (4x for lists, 2x for numpy arrays)
+        u, v, w, p, q, r, phi, theta, psi, x, y, z = state # z is positive down (altitude = -z)
+    elif np.ndim(state) == 1:
+        is_scalar = True
         # Optimization: Ensure inputs are native floats to avoid numpy scalar overhead
         # This speeds up math operations by ~45-60% on scalar paths
-        if not is_list:
-            # Convert numpy array to list of floats (fast)
-            state = state.tolist()
-            if not isinstance(control, (list, tuple)):
-                control = control.tolist()
-            is_list = True
 
-            # Re-unpack state variables (they were numpy scalars)
-            u, v, w, p, q, r, phi, theta, psi, x, y, z = state
+        # Convert numpy array to list of floats (fast)
+        # Doing this immediately avoids the overhead of unpacking numpy scalars first
+        state = state.tolist()
+        if not isinstance(control, (list, tuple)):
+            control = control.tolist()
+        is_list = True
 
+        # Unpack state variables
+        u, v, w, p, q, r, phi, theta, psi, x, y, z = state
+    else:
+        is_scalar = False
+        # Vectorized path: Unpack directly
+        u, v, w, p, q, r, phi, theta, psi, x, y, z = state
+
+    if is_scalar:
         # Check heuristic for numpy scalars (which are slow for math module)
         # We check the first element (u) as a proxy for the whole state vector
         u_val = state[0]
@@ -243,12 +250,20 @@ def equations_of_motion(t, state, aircraft, control):
     # [theta_dot] = [ 0  cos(phi)            -sin(phi)          ] [ q ]
     # [psi_dot]   [ 0  sin(phi)sec(theta)  cos(phi)sec(theta) ] [ r ]
 
-    # tan(theta) = s_th / c_th
-    t_th = s_th / c_th
+    # Optimization: Reduced trig operations and reused intermediate term
+    # r_rot = q * sin(phi) + r * cos(phi)
+    r_rot = q * s_ph + r * c_ph
 
-    phi_dot = p + (q * s_ph + r * c_ph) * t_th
+    # theta_dot = q * cos(phi) - r * sin(phi)
     theta_dot = q * c_ph - r * s_ph
-    psi_dot = (q * s_ph + r * c_ph) / c_th
+
+    # psi_dot = r_rot / cos(theta)
+    psi_dot = r_rot / c_th
+
+    # phi_dot = p + psi_dot * sin(theta)
+    # Replaces: p + r_rot * tan(theta)
+    # Saves: 1 division (tan=sin/cos)
+    phi_dot = p + psi_dot * s_th
 
     # Navigation (Position rates) NED
     # Transform Body velocities (u,v,w) to NED (x_dot, y_dot, z_dot)

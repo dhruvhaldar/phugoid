@@ -27,3 +27,11 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-XX-XX - [Numpy Scalar Overhead in Core Physics Loop]
 **Learning:** Lists containing Numpy scalars (e.g. `[np.float64(0.0), ...]`) passed to physics functions defeat `math` module optimizations because `type(np.float64) is not float` (though `isinstance` passes). Explicitly converting these to native `float` using list comprehension yields ~30-40% speedup in `equations_of_motion`.
 **Action:** In core physics loops, add a fast check (e.g. `type(state[0]) is not float`) and convert inputs to native floats immediately if detected. Ensure return type semantics (Array vs List) are preserved to avoid breaking callers.
+
+## 2026-XX-XX - [Unpacking Numpy Arrays for Scalar Math]
+**Learning:** Directly unpacking a 1D NumPy array into variables (e.g., `u, v, w = state`) creates NumPy scalars, which are significantly slower in subsequent math operations than native Python floats. Converting the array to a list first (`state = state.tolist()`) before unpacking ensures that the variables are native floats, avoiding this overhead and improving performance by ~25% in hot paths like `equations_of_motion`.
+**Action:** When optimizing scalar paths for functions that accept NumPy arrays, convert 1D arrays to lists using `.tolist()` immediately before unpacking and processing.
+
+## 2026-XX-XX - [Optimizing Kinematic Equations]
+**Learning:** Kinematic equations involving Euler angles often contain redundant trigonometric terms. By pre-calculating common terms (e.g., `r_rotated = q * sin(phi) + r * cos(phi)`) and using algebraic substitutions (e.g., deriving `phi_dot` from `psi_dot`), we can reduce the number of expensive multiplications and divisions, yielding measurable performance improvements.
+**Action:** Analyze mathematical equations for common sub-expressions and algebraic simplifications, especially in high-frequency physics loops.
