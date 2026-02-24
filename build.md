@@ -1,4 +1,4 @@
-source # Building Phugoid
+# Building Phugoid
 
 This document provides instructions on how to set up and run the Phugoid flight dynamics engine locally.
 
