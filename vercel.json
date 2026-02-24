@@ -4,11 +4,5 @@
       "source": "/api/(.*)",
       "destination": "/api/index.py"
     }
-  ],
-  "functions": {
-    "api/**": {
-      "maxDuration": 10,
-      "excludeFiles": "venv/**"
-    }
-  }
+  ]
 }
