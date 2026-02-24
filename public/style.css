@@ -21,7 +21,7 @@ section {
     padding: 20px;
     background-color: #fff;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .input-group {
@@ -90,7 +90,8 @@ button:hover {
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 15px;
-    display: none; /* Hidden by default */
+    display: none;
+    /* Hidden by default */
 }
 
 .error-message:not(:empty) {
@@ -101,7 +102,8 @@ button.loading {
     opacity: 0.7;
     cursor: not-allowed;
     position: relative;
-    padding-left: 40px; /* Make space for spinner */
+    padding-left: 40px;
+    /* Make space for spinner */
 }
 
 /* Simple CSS Spinner */
@@ -120,8 +122,13 @@ button.loading::after {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Accessibility: Focus Visible */
@@ -206,7 +213,7 @@ input:invalid {
     background-color: #fff;
     /* Reusing section styles but confirming them */
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
 
@@ -277,4 +284,112 @@ input:invalid {
     background-color: #d4edda;
     border-color: #c3e6cb;
     color: #155724;
+}
+
+/* Fancy Footer */
+.site-footer {
+    background-color: #1a1a2e;
+    color: #d1d1e0;
+    padding: 60px 0 20px 0;
+    margin-top: 60px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-top: 4px solid #0f3460;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    padding: 0 40px;
+    box-sizing: border-box;
+    /* Ensure padding doesn't widen the container past max-width */
+}
+
+.footer-section h3 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+}
+
+.footer-section h4 {
+    color: #e94560;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0;
+}
+
+.footer-section p {
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.footer-section.brand p {
+    color: #a0a0b5;
+}
+
+.social-links a {
+    color: #d1d1e0;
+    display: inline-block;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #e94560;
+    transform: translateY(-3px);
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 12px;
+}
+
+.footer-section ul li a,
+.portfolio-link {
+    color: #a0a0b5;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: inline-block;
+}
+
+.footer-section ul li a:hover,
+.portfolio-link:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.portfolio-link {
+    font-weight: bold;
+    color: #e94560;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 30px;
+    margin-top: 50px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9em;
+    color: #797992;
+}
+
+@media (max-width: 768px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .footer-section h3 {
+        justify-content: center;
+    }
 }

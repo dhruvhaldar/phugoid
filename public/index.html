@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phugoid - Flight Dynamics Workbench</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" integrity="sha384-Hl48Kq2HifOWdXEjMsKo6qxqvRLTYqIGbvlENBmkHAxZKIGCXv43H6W1jA671RzC" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"
+        integrity="sha384-Hl48Kq2HifOWdXEjMsKo6qxqvRLTYqIGbvlENBmkHAxZKIGCXv43H6W1jA671RzC"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+        integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu"
+        crossorigin="anonymous"></script>
 </head>
+
 <body>
     <header>
         <h1>Phugoid</h1>
@@ -20,17 +27,23 @@
             <div id="status-region" class="sr-only" role="status" aria-live="polite"></div>
             <form id="flight-controls">
                 <div class="presets">
-                    <button type="button" class="preset-btn" data-v="51.44" data-h="1524" aria-pressed="false">Cruise (100kts)</button>
-                    <button type="button" class="preset-btn" data-v="33.4" data-h="300" aria-pressed="false">Approach (65kts)</button>
+                    <button type="button" class="preset-btn" data-v="51.44" data-h="1524" aria-pressed="false">Cruise
+                        (100kts)</button>
+                    <button type="button" class="preset-btn" data-v="33.4" data-h="300" aria-pressed="false">Approach
+                        (65kts)</button>
                 </div>
                 <div class="input-group">
-                    <label for="velocity">Velocity (m/s) <span id="velocity-unit-display" class="unit-hint"></span></label>
-                    <input type="number" id="velocity" value="51.44" step="any" min="0.1" required aria-describedby="velocity-help">
+                    <label for="velocity">Velocity (m/s) <span id="velocity-unit-display"
+                            class="unit-hint"></span></label>
+                    <input type="number" id="velocity" value="51.44" step="any" min="0.1" required
+                        aria-describedby="velocity-help">
                     <small id="velocity-help" class="help-text">Min: 0.1 m/s (Positive value)</small>
                 </div>
                 <div class="input-group">
-                    <label for="altitude">Altitude (m) <span id="altitude-unit-display" class="unit-hint"></span></label>
-                    <input type="number" id="altitude" value="1524" step="any" min="-500" max="50000" required aria-describedby="altitude-help">
+                    <label for="altitude">Altitude (m) <span id="altitude-unit-display"
+                            class="unit-hint"></span></label>
+                    <input type="number" id="altitude" value="1524" step="any" min="-500" max="50000" required
+                        aria-describedby="altitude-help">
                     <small id="altitude-help" class="help-text">Range: -500 to 50,000 m</small>
                 </div>
                 <div id="error-message" class="error-message" role="alert" aria-live="assertive"></div>
@@ -40,7 +53,9 @@
 
         <section id="empty-state" class="empty-state">
             <div class="empty-content">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
                 <h2>Ready for Analysis</h2>
@@ -52,8 +67,11 @@
             <div id="trim-results">
                 <div class="results-header">
                     <h2>Trim State</h2>
-                    <button id="copy-trim-btn" class="icon-btn" aria-label="Copy trim results to clipboard" title="Copy to clipboard">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <button id="copy-trim-btn" class="icon-btn" aria-label="Copy trim results to clipboard"
+                        title="Copy to clipboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
@@ -86,12 +104,51 @@
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2026 Phugoid Project</p>
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-section brand">
+                <h3>Phugoid</h3>
+                <p>An open-source, serverless flight dynamics and control workbench built for aerospace engineering
+                    education and research.</p>
+                <div class="social-links">
+                    <a href="https://github.com/dhruvhaldar/phugoid" target="_blank" rel="noopener noreferrer"
+                        aria-label="GitHub Repository">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="feather feather-github">
+                            <path
+                                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-section links">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://github.com/dhruvhaldar/phugoid#readme" target="_blank"
+                            rel="noopener">Documentation</a></li>
+                    <li><a href="https://github.com/dhruvhaldar/phugoid/blob/main/build.md" target="_blank"
+                            rel="noopener">Local Setup</a></li>
+                    <li><a href="https://github.com/dhruvhaldar/phugoid/issues" target="_blank" rel="noopener">Report an
+                            Issue</a></li>
+                </ul>
+            </div>
+            <div class="footer-section author">
+                <h4>Created By</h4>
+                <p><strong>Dhruv Haldar</strong></p>
+                <a href="https://dhruvhaldar.com" target="_blank" rel="noopener" class="portfolio-link">Visit Portfolio
+                    &rarr;</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Phugoid Project. MIT Licensed.</p>
+        </div>
     </footer>
 
     <script src="pole_plot.js"></script>
     <script src="aircraft_viewer.js"></script>
     <script src="main.js"></script>
 </body>
+
 </html>
