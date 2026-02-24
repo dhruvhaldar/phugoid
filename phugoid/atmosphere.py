@@ -13,7 +13,7 @@ EXPONENT = g / (R * L)
 BASE_FACTOR = L / T0
 
 @lru_cache(maxsize=128)
-def _atmosphere_scalar(altitude_val):
+def atmosphere_scalar(altitude_val):
     """
     Optimized scalar implementation of ISA Atmosphere Model with caching.
 
@@ -59,7 +59,7 @@ def atmosphere(altitude):
     if isinstance(altitude, (int, float)) or (isinstance(altitude, np.floating) and altitude.ndim == 0):
         # Scalar optimization: caching and pre-calc constants
         # Convert to float to ensure cache consistency (e.g. 1000 vs 1000.0)
-        return _atmosphere_scalar(float(altitude))
+        return atmosphere_scalar(float(altitude))
     else:
         # Vectorized implementation for arrays
         h = np.array(altitude, dtype=float)

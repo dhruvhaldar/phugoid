@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from functools import lru_cache
-from phugoid.atmosphere import atmosphere
+from phugoid.atmosphere import atmosphere, atmosphere_scalar
 
 @lru_cache(maxsize=128)
 def _cached_trig(phi, theta, psi):
@@ -110,7 +110,10 @@ def equations_of_motion(t, state, aircraft, control):
     Ixz = aircraft.Ixz
 
     # Atmosphere
-    T, P, rho = atmosphere(-z)
+    if is_scalar:
+        T, P, rho = atmosphere_scalar(-z)
+    else:
+        T, P, rho = atmosphere(-z)
 
     # Airspeed
     if is_scalar:
