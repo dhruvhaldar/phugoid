@@ -1,6 +1,18 @@
 import numpy as np
 import math
+from functools import lru_cache
 from phugoid.atmosphere import atmosphere
+
+@lru_cache(maxsize=128)
+def _cached_trig(phi, theta, psi):
+    """
+    Cached trigonometric calculations for Euler angles.
+    Reduces redundant math.sin/cos calls when orientation is constant
+    (e.g. during Jacobian estimation of non-angular states).
+    """
+    return (math.sin(phi), math.cos(phi),
+            math.sin(theta), math.cos(theta),
+            math.sin(psi), math.cos(psi))
 
 def equations_of_motion(t, state, aircraft, control):
     """
@@ -58,6 +70,9 @@ def equations_of_motion(t, state, aircraft, control):
         if type(de_val) is not float and type(de_val) is not int:
             control = [float(x) for x in control]
 
+        # Use cached trig for scalar path to speed up Jacobian estimation
+        s_ph, c_ph, s_th, c_th, s_ps, c_ps = _cached_trig(float(phi), float(theta), float(psi))
+
         sin = math.sin
         cos = math.cos
         atan2 = math.atan2
@@ -70,13 +85,13 @@ def equations_of_motion(t, state, aircraft, control):
         sqrt = np.sqrt
         asin = np.arcsin
 
-    # Pre-calculate trigonometric functions
-    c_th = cos(theta)
-    s_th = sin(theta)
-    c_ph = cos(phi)
-    s_ph = sin(phi)
-    c_ps = cos(psi)
-    s_ps = sin(psi)
+        # Calculate trig for vector
+        c_th = cos(theta)
+        s_th = sin(theta)
+        c_ph = cos(phi)
+        s_ph = sin(phi)
+        c_ps = cos(psi)
+        s_ps = sin(psi)
 
     # Unpack control
     delta_e, delta_a, delta_r, throttle = control
@@ -98,7 +113,10 @@ def equations_of_motion(t, state, aircraft, control):
     T, P, rho = atmosphere(-z)
 
     # Airspeed
-    V = sqrt(u**2 + v**2 + w**2)
+    if is_scalar:
+        V = math.hypot(u, v, w) # Faster and safer than sqrt(sum sq)
+    else:
+        V = sqrt(u**2 + v**2 + w**2)
 
     # Avoid division by zero
     if is_scalar:
