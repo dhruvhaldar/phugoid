@@ -7,3 +7,7 @@
 ## 2026-02-17 - Clipboard Interaction Feedback
 **Learning:** For actions like "Copy to Clipboard", immediate visual confirmation (changing icon/text to "Copied!") is crucial because the action is invisible. Users feel uncertain without this explicit feedback.
 **Action:** Always pair clipboard actions with a temporary state change (e.g., green checkmark, "Copied!" text) that reverts automatically after a short delay (2s).
+
+## 2026-05-20 - Focus Management after Async Actions
+**Learning:** Simply unhiding content is insufficient for accessibility. Screen reader users may not realize new content has appeared, and keyboard users may have to tab extensively to reach it.
+**Action:** Use `element.focus({ preventScroll: true })` combined with `scrollIntoView` to guide both visual and assistive technology focus to the new content immediately.
