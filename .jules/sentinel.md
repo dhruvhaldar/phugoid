@@ -27,3 +27,8 @@
 **Vulnerability:** CDN-hosted scripts (`plotly.min.js`, `three.min.js`) were included without integrity checks, allowing potential XSS if the CDN provider is compromised or a man-in-the-middle attack modifies the response.
 **Learning:** Trusting third-party CDNs blindly violates "Defense in Depth". Even reputable CDNs can serve malicious content if their infrastructure is breached.
 **Prevention:** Added `integrity` (SRI hash) and `crossorigin="anonymous"` attributes to all external script tags to ensure browsers verify the file content matches the expected hash before execution.
+
+## 2026-10-28 - DoS and Undefined Behavior via Non-Finite Floating Point Inputs
+**Vulnerability:** The API accepted `Infinity` and `NaN` values for floating-point fields (e.g., `flight_path_angle`, `CL_alpha`) in Pydantic models. These values propagated to the backend physics engine (`phugoid.dynamics`), causing unhandled exceptions (500 Internal Server Error) or `NaN` poisoning of calculation results.
+**Learning:** Python's `float` type includes `inf` and `nan`, and Pydantic V2 allows them by default unless explicitly restricted. Mathematical applications must rigorously sanitize numerical inputs to ensure finiteness.
+**Prevention:** Updated all critical Pydantic fields to use `Field(..., allow_inf_nan=False)` and added comprehensive unit tests to reject non-finite inputs with a 422 Unprocessable Entity error.
