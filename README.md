@@ -5,6 +5,8 @@
 [![Vercel](https://img.shields.io/badge/Vercel-Deploy-black)](https://vercel.com/)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/downloads/)
 [![PyPI](https://img.shields.io/badge/PyPI-1.0.0-blue)](https://pypi.org/project/phugoid/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-blue)](https://fastapi.tiangolo.com/)
+[![Uvicorn](https://img.shields.io/badge/Uvicorn-0.100+-blue)](https://www.uvicorn.org/)
 
 **Phugoid** is a Python-based flight dynamics engine designed for **SD2805 Flight Mechanics**. It serves as a modern replacement for the traditional Matlab toolboxes used in aeronautical engineering.
 

@@ -27,6 +27,14 @@ Phugoid requires **Python 3.8+**. It is recommended to use a virtual environment
    pip install -r requirements.txt
    ```
 
+## Running the Application Locally
+
+To run the local FastAPI server, use the following command:
+```bash
+uvicorn api.index:app --reload
+```
+The server will start at `http://localhost:8000` and automatically reload when you make changes. The frontend will be served at the root URL.
+
 ## Running the Examples
 
 You can test if the environment is properly set up by running the examples (if they exist) or by invoking the tests.
