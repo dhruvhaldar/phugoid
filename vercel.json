@@ -6,7 +6,7 @@
     }
   ],
   "functions": {
-    "api/**/*.py": {
+    "api/**": {
       "maxDuration": 10,
       "excludeFiles": "venv/**"
     }
