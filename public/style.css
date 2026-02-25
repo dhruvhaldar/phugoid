@@ -489,3 +489,14 @@ input:invalid {
         text-align: left;
     }
 }
+/* Keyboard Shortcut Hint */
+.kbd-shortcut {
+    font-size: 0.8em;
+    opacity: 0.8;
+    margin-left: 10px;
+    font-weight: normal;
+    border: 1px solid rgba(0,0,0,0.2);
+    padding: 2px 5px;
+    display: inline-block;
+    vertical-align: text-bottom;
+}

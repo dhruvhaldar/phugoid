@@ -11,3 +11,7 @@
 ## 2026-05-20 - Focus Management after Async Actions
 **Learning:** Simply unhiding content is insufficient for accessibility. Screen reader users may not realize new content has appeared, and keyboard users may have to tab extensively to reach it.
 **Action:** Use `element.focus({ preventScroll: true })` combined with `scrollIntoView` to guide both visual and assistive technology focus to the new content immediately.
+
+## 2026-10-27 - Power User Shortcuts
+**Learning:** Adding keyboard shortcuts (like `Cmd+Enter` for form submission) significantly improves the workflow for power users, but they are often undiscoverable.
+**Action:** Always surface keyboard shortcuts visually (e.g., using a subtle badge or tooltip) and programmatically via `aria-keyshortcuts` to ensure discoverability and accessibility.
