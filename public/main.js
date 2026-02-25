@@ -61,6 +61,31 @@ altitudeInput.addEventListener('input', updateUnits);
 // Initialize
 updateUnits();
 
+// Keyboard Shortcut: Detect OS and Add Listener
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+const shortcutKey = isMac ? '⌘' : 'Ctrl';
+const shortcutDisplay = document.getElementById('submit-shortcut');
+const calculateBtn = document.getElementById('calculate-btn');
+
+if (shortcutDisplay) {
+    shortcutDisplay.textContent = `${shortcutKey} + Enter`;
+}
+
+if (calculateBtn) {
+    calculateBtn.setAttribute('aria-keyshortcuts', `${isMac ? 'Meta' : 'Control'}+Enter`);
+}
+
+document.addEventListener('keydown', (e) => {
+    // Check for Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        const btn = document.getElementById('calculate-btn');
+        // Only trigger if button exists and is not disabled (e.g. not loading)
+        if (btn && !btn.disabled) {
+            btn.click();
+        }
+    }
+});
+
 document.getElementById('flight-controls').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('calculate-btn');
