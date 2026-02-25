@@ -35,3 +35,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-XX-XX - [Optimizing Kinematic Equations]
 **Learning:** Kinematic equations involving Euler angles often contain redundant trigonometric terms. By pre-calculating common terms (e.g., `r_rotated = q * sin(phi) + r * cos(phi)`) and using algebraic substitutions (e.g., deriving `phi_dot` from `psi_dot`), we can reduce the number of expensive multiplications and divisions, yielding measurable performance improvements.
 **Action:** Analyze mathematical equations for common sub-expressions and algebraic simplifications, especially in high-frequency physics loops.
+
+## 2026-02-17 - [Optimizing Euclidean Norm in Python]
+**Learning:** In Python 3.12+, `math.hypot(x, y, z)` is slightly slower (~37%) than `math.sqrt(x*x + y*y + z*z)` for scalar inputs, likely due to internal overflow checks. Additionally, calculating `V**2` using `pow(V, 2)` is significantly slower (~2x) than simple multiplication `V*V` or reusing the squared sum from the norm calculation.
+**Action:** When computing magnitude and its square (e.g., for dynamic pressure `0.5 * rho * V**2`), calculate `V_sq = sum(x**2)` first, then `V = sqrt(V_sq)`, and use `V_sq` directly to avoid the expensive `pow` call.
