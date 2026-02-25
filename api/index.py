@@ -127,7 +127,7 @@ class TrimResponse(BaseModel):
     w: float
 
 class AnalysisRequest(BaseModel):
-    velocity: float = Field(..., gt=0, description="Velocity in m/s (must be positive)", allow_inf_nan=False)
+    velocity: float = Field(..., gt=0, le=1000, description="Velocity in m/s (must be positive, max 1000)", allow_inf_nan=False)
     altitude: float = Field(..., ge=-500, le=50000, description="Altitude in meters", allow_inf_nan=False)
     aircraft: Optional[AircraftParameters] = None
 

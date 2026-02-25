@@ -32,3 +32,8 @@
 **Vulnerability:** The API accepted `Infinity` and `NaN` values for floating-point fields (e.g., `flight_path_angle`, `CL_alpha`) in Pydantic models. These values propagated to the backend physics engine (`phugoid.dynamics`), causing unhandled exceptions (500 Internal Server Error) or `NaN` poisoning of calculation results.
 **Learning:** Python's `float` type includes `inf` and `nan`, and Pydantic V2 allows them by default unless explicitly restricted. Mathematical applications must rigorously sanitize numerical inputs to ensure finiteness.
 **Prevention:** Updated all critical Pydantic fields to use `Field(..., allow_inf_nan=False)` and added comprehensive unit tests to reject non-finite inputs with a 422 Unprocessable Entity error.
+
+## 2026-10-29 - DoS Risk via Unbounded Numerical Inputs
+**Vulnerability:** The `AnalysisRequest` API model lacked an upper bound for `velocity`, unlike the `TrimRequest` model. This allowed attackers to submit extremely large values (e.g., `1e100`), potentially causing numerical instability, infinite loops in solvers, or resource exhaustion (DoS) in the `TrimSolver`.
+**Learning:** Inconsistent validation logic across similar API endpoints is a common source of security gaps. "Defense in Depth" requires that all entry points enforce the same strict constraints on domain-specific inputs.
+**Prevention:** Added `le=1000` (max 1000 m/s) to the `velocity` field in `AnalysisRequest`, aligning it with `TrimRequest` and enforcing physical realism.
