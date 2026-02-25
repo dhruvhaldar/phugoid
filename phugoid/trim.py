@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from phugoid.dynamics import equations_of_motion
+from phugoid.dynamics import equations_of_motion, longitudinal_equations_of_motion
 
 class TrimState:
     def __init__(self, alpha, elevator, throttle, u, w, theta, velocity, altitude):
@@ -37,7 +37,7 @@ class TrimSolver:
             state = [u, 0, w, 0, 0, 0, 0, theta, 0, 0, 0, -altitude]
             control = [elevator, 0, 0, throttle]
 
-            derivs = equations_of_motion(0, state, self.aircraft, control)
+            derivs = longitudinal_equations_of_motion(0, state, self.aircraft, control)
             return np.array([derivs[0], derivs[2], derivs[4]])
 
         def jacobian(x, eps=1e-5):

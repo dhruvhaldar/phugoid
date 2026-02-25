@@ -299,3 +299,125 @@ def equations_of_motion(t, state, aircraft, control):
         return result
     else:
         return np.array(result)
+
+def longitudinal_equations_of_motion(t, state, aircraft, control):
+    """
+    Optimized version of equations_of_motion for longitudinal dynamics only.
+    Assumes lateral states (v, p, r, phi, psi) and lateral controls (delta_a, delta_r) are zero.
+    Returns full state derivative list with zeros for lateral components.
+    Used by TrimSolver for ~2x performance.
+    """
+    # Optimized imports for scalar path
+    sin = math.sin
+    cos = math.cos
+    atan2 = math.atan2
+    sqrt = math.sqrt
+
+    # Unpack state (u, w, q, theta, z are relevant)
+    # state is expected to be a list/tuple or numpy array.
+    # TrimSolver passes a list.
+    if isinstance(state, (list, tuple)):
+        u = state[0]
+        w = state[2]
+        q = state[4]
+        theta = state[7]
+        z = state[11]
+    else:
+        # Numpy array (fallback)
+        u = state[0]
+        w = state[2]
+        q = state[4]
+        theta = state[7]
+        z = state[11]
+
+    # Unpack control (delta_e, throttle)
+    if isinstance(control, (list, tuple)):
+        delta_e = control[0]
+        throttle = control[3]
+    else:
+        delta_e = control[0]
+        throttle = control[3]
+
+    # Constants
+    g = 9.80665
+    m = aircraft.mass
+    S = aircraft.S
+    c = aircraft.c
+    Iyy = aircraft.Iyy
+
+    # Atmosphere
+    # Assume scalar input since this is optimized for TrimSolver
+    T, P, rho = atmosphere_scalar(-z)
+
+    # Airspeed
+    V_sq = u*u + w*w
+    # Avoid division by zero
+    if V_sq < 0.01:
+        V_sq = 0.01
+        V = 0.1
+    else:
+        V = sqrt(V_sq)
+
+    # Aerodynamic Angles
+    alpha = atan2(w, u)
+    s_alpha = sin(alpha)
+    c_alpha = cos(alpha)
+
+    # Dynamic Pressure
+    q_bar = 0.5 * rho * V_sq
+    q_bar_S = q_bar * S
+
+    # Normalized q
+    inv_2V = 0.5 / V
+    q_norm = q * c * inv_2V
+
+    # Aerodynamic Coefficients (Longitudinal)
+    CL = aircraft.CL0 + aircraft.CL_alpha * alpha + aircraft.CL_q * q_norm + aircraft.CL_de * delta_e
+    CD = aircraft.CD0 + aircraft.CD_alpha * abs(alpha)
+    Cm = aircraft.Cm0 + aircraft.Cm_alpha * alpha + aircraft.Cm_q * q_norm + aircraft.Cm_de * delta_e
+
+    # Forces in Body Frame
+    # Fx_aero = -D cos(alpha) + L sin(alpha)
+    # Fz_aero = -D sin(alpha) - L cos(alpha)
+    Fx_aero = q_bar_S * (-CD * c_alpha + CL * s_alpha)
+    Fz_aero = q_bar_S * (-CD * s_alpha - CL * c_alpha)
+
+    # Pitching Moment
+    M_moment = q_bar_S * c * Cm
+
+    # Thrust
+    Thrust = throttle * 2000.0 * (rho / 1.225)
+
+    Fx = Fx_aero + Thrust
+    Fz = Fz_aero
+
+    # Gravity (phi=0)
+    s_th = sin(theta)
+    c_th = cos(theta)
+
+    Gx = -m * g * s_th
+    Gz = m * g * c_th
+
+    # Accelerations
+    # udot = Fx/m - qw
+    udot = (Fx + Gx)/m - q*w
+
+    # wdot = Fz/m + qu
+    wdot = (Fz + Gz)/m + q*u
+
+    # qdot = M/Iyy
+    qdot = M_moment / Iyy
+
+    # Kinematics
+    # theta_dot = q (since phi=0)
+    theta_dot = q
+
+    # Navigation (NED)
+    # x_dot = c_th * u + s_th * w (since psi=0)
+    x_dot = c_th * u + s_th * w
+    # z_dot = -s_th * u + c_th * w
+    z_dot = -s_th * u + c_th * w
+
+    # Return list compatible with full state
+    # [udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot]
+    return [udot, 0.0, wdot, 0.0, qdot, 0.0, 0.0, theta_dot, 0.0, x_dot, 0.0, z_dot]
