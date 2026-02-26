@@ -15,3 +15,7 @@
 ## 2026-10-27 - Power User Shortcuts
 **Learning:** Adding keyboard shortcuts (like `Cmd+Enter` for form submission) significantly improves the workflow for power users, but they are often undiscoverable.
 **Action:** Always surface keyboard shortcuts visually (e.g., using a subtle badge or tooltip) and programmatically via `aria-keyshortcuts` to ensure discoverability and accessibility.
+
+## 2026-11-20 - Stale Results Visualization
+**Learning:** When input parameters are modified after a successful calculation, leaving the old results fully visible can lead to dangerous misinterpretation. Users assume the visible data reflects the current configuration.
+**Action:** Implement a "Stale State" by visually dimming outdated results (opacity/grayscale) and adding a clear warning label ("Recalculate"). This forces the user to acknowledge the discrepancy before proceeding.

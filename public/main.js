@@ -37,9 +37,17 @@ presetBtns.forEach(btn => {
 
         updateUnits();
 
+        // Mark results as stale if visible
+        const resultsSection = document.getElementById('results');
+        const vizSection = document.getElementById('visualization');
+        if (resultsSection && !resultsSection.classList.contains('hidden')) {
+            resultsSection.classList.add('stale');
+            if (vizSection) vizSection.classList.add('stale');
+        }
+
         // Announce to screen readers
         if (statusRegion) {
-            statusRegion.textContent = `Preset ${btn.textContent} selected`;
+            statusRegion.textContent = `Preset ${btn.textContent} selected. Results outdated.`;
         }
     });
 });
@@ -57,6 +65,25 @@ altitudeInput.addEventListener('input', clearPresetSelection);
 
 velocityInput.addEventListener('input', updateUnits);
 altitudeInput.addEventListener('input', updateUnits);
+
+const markResultsStale = () => {
+    const resultsSection = document.getElementById('results');
+    const vizSection = document.getElementById('visualization');
+
+    // Only mark stale if results are currently visible
+    if (resultsSection && !resultsSection.classList.contains('hidden')) {
+        resultsSection.classList.add('stale');
+        if (vizSection) vizSection.classList.add('stale');
+
+        // Announce to screen readers
+        if (statusRegion) {
+            statusRegion.textContent = 'Inputs changed. Results are outdated.';
+        }
+    }
+};
+
+velocityInput.addEventListener('input', markResultsStale);
+altitudeInput.addEventListener('input', markResultsStale);
 
 // Initialize
 updateUnits();
@@ -162,7 +189,12 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         // UX: Show Results, Hide Empty State
         const resultsSection = document.getElementById('results');
         resultsSection.classList.remove('hidden');
-        document.getElementById('visualization').classList.remove('hidden');
+        resultsSection.classList.remove('stale');
+
+        const vizSection = document.getElementById('visualization');
+        vizSection.classList.remove('hidden');
+        vizSection.classList.remove('stale');
+
         document.getElementById('empty-state').classList.add('hidden');
 
         // UX: Scroll to results and focus for accessibility

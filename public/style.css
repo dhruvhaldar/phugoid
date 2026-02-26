@@ -500,3 +500,23 @@ input:invalid {
     display: inline-block;
     vertical-align: text-bottom;
 }
+
+/* Stale Results Visualization */
+#results.stale, #visualization.stale {
+    opacity: 0.6;
+    filter: grayscale(100%);
+    transition: opacity 0.3s, filter 0.3s;
+}
+
+#results.stale::before {
+    content: "Results outdated - Recalculate";
+    display: block;
+    background: var(--accent-yellow);
+    color: var(--text-color);
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border: var(--border-width) solid var(--border-color);
+    margin-bottom: 20px;
+    box-shadow: 4px 4px 0px 0px #111;
+}
