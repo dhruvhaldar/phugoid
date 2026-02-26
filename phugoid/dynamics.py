@@ -355,13 +355,19 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     if V_sq < 0.01:
         V_sq = 0.01
         V = 0.1
+        # Low speed: V is artificial, so w/V is not sin(alpha)
+        # Must use trig to preserve unit magnitude of s_alpha, c_alpha
+        alpha = atan2(w, u)
+        s_alpha = sin(alpha)
+        c_alpha = cos(alpha)
     else:
         V = sqrt(V_sq)
-
-    # Aerodynamic Angles
-    alpha = atan2(w, u)
-    s_alpha = sin(alpha)
-    c_alpha = cos(alpha)
+        # Optimization: Use algebraic trig for alpha to avoid 2 expensive trig calls
+        # sin(alpha) = w/V, cos(alpha) = u/V
+        # Valid here because V = sqrt(u^2 + w^2)
+        alpha = atan2(w, u) # Still needed for coefficients
+        s_alpha = w / V
+        c_alpha = u / V
 
     # Dynamic Pressure
     q_bar = 0.5 * rho * V_sq
