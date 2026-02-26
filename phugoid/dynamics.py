@@ -355,20 +355,26 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     if V_sq < 0.01:
         V_sq = 0.01
         V = 0.1
+        inv_V = 10.0 # 1.0 / 0.1
     else:
         V = sqrt(V_sq)
+        inv_V = 1.0 / V
 
     # Aerodynamic Angles
     alpha = atan2(w, u)
-    s_alpha = sin(alpha)
-    c_alpha = cos(alpha)
+
+    # Optimization: Use algebraic trig for alpha (avoids 2 trig calls)
+    # sin(alpha) = w/V, cos(alpha) = u/V
+    # V is already calculated and guarded against division by zero
+    s_alpha = w * inv_V
+    c_alpha = u * inv_V
 
     # Dynamic Pressure
     q_bar = 0.5 * rho * V_sq
     q_bar_S = q_bar * S
 
     # Normalized q
-    inv_2V = 0.5 / V
+    inv_2V = 0.5 * inv_V
     q_norm = q * c * inv_2V
 
     # Aerodynamic Coefficients (Longitudinal)
