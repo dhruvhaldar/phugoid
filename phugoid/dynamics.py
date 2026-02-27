@@ -118,7 +118,31 @@ def equations_of_motion(t, state, aircraft, control):
 
     # Atmosphere
     if is_scalar:
-        T, P, rho = atmosphere_scalar(-z)
+        # Optimization: Inlined atmosphere calculation to avoid lru_cache overhead
+        # during integration steps where altitude changes continuously.
+        # This speeds up the integration loop by avoiding cache misses/hashing.
+        h_val = -z
+        # Constants from atmosphere.py
+        T0 = 288.15
+        P0 = 101325.0
+        L_lapse = 0.0065
+        g_atm = 9.80665
+        R_gas = 287.05
+        # Pre-calculated constants
+        EXPONENT = 5.2558797  # g / (R * L)
+        BASE_FACTOR = 2.25576956e-05  # L / T0
+
+        if h_val < 0.0:
+            h_clamped = 0.0
+        elif h_val > 11000.0:
+            h_clamped = 11000.0
+        else:
+            h_clamped = h_val
+
+        T = T0 - L_lapse * h_clamped
+        base_atm = 1.0 - BASE_FACTOR * h_clamped
+        P = P0 * (base_atm ** EXPONENT)
+        rho = P / (R_gas * T)
     else:
         T, P, rho = atmosphere(-z)
 
@@ -347,7 +371,27 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
 
     # Atmosphere
     # Assume scalar input since this is optimized for TrimSolver
-    T, P, rho = atmosphere_scalar(-z)
+    # Optimization: Inlined atmosphere calculation (same as above)
+    h_val = -z
+    T0 = 288.15
+    P0 = 101325.0
+    L_lapse = 0.0065
+    g_atm = 9.80665
+    R_gas = 287.05
+    EXPONENT = 5.2558797
+    BASE_FACTOR = 2.25576956e-05
+
+    if h_val < 0.0:
+        h_clamped = 0.0
+    elif h_val > 11000.0:
+        h_clamped = 11000.0
+    else:
+        h_clamped = h_val
+
+    T = T0 - L_lapse * h_clamped
+    base_atm = 1.0 - BASE_FACTOR * h_clamped
+    P = P0 * (base_atm ** EXPONENT)
+    rho = P / (R_gas * T)
 
     # Airspeed
     V_sq = u*u + w*w
