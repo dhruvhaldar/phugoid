@@ -147,6 +147,12 @@ button:active {
     box-shadow: var(--shadow-solid-active);
 }
 
+button:focus-visible {
+    outline: none;
+    background-color: #f0f0f0;
+    box-shadow: inset 4px 4px 0px 0px rgba(0, 0, 0, 0.1), 0 0 0 2px var(--bg-color), 0 0 0 4px var(--text-color);
+}
+
 #calculate-btn {
     width: 100%;
     margin-top: 15px;
