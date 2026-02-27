@@ -3,6 +3,14 @@ import math
 from functools import lru_cache
 from phugoid.atmosphere import atmosphere, atmosphere_scalar
 
+# Module-level aliases for math functions to avoid local lookup overhead
+# in hot path (equations_of_motion)
+_sin = math.sin
+_cos = math.cos
+_atan2 = math.atan2
+_sqrt = math.sqrt
+_asin = math.asin
+
 @lru_cache(maxsize=128)
 def _cached_trig(phi, theta, psi):
     """
@@ -80,11 +88,7 @@ def equations_of_motion(t, state, aircraft, control):
         # Use cached trig for scalar path to speed up Jacobian estimation
         s_ph, c_ph, s_th, c_th, s_ps, c_ps = _cached_trig(float(phi), float(theta), float(psi))
 
-        sin = math.sin
-        cos = math.cos
-        atan2 = math.atan2
-        sqrt = math.sqrt
-        asin = math.asin
+        # Aliases are now module-level (_sin, _cos, etc.)
     else:
         sin = np.sin
         cos = np.cos
@@ -151,7 +155,7 @@ def equations_of_motion(t, state, aircraft, control):
     # Benchmark shows sqrt(sum sq) is faster than hypot for 3 args in this context (~37% faster)
     if is_scalar:
         V_sq = u*u + v*v + w*w
-        V = sqrt(V_sq)
+        V = _sqrt(V_sq)
     else:
         V_sq = u**2 + v**2 + w**2
         V = sqrt(V_sq)
@@ -166,9 +170,14 @@ def equations_of_motion(t, state, aircraft, control):
         V_sq = np.maximum(V_sq, 0.01)
 
     # Aerodynamic Angles
-    alpha = atan2(w, u)
-    s_alpha = sin(alpha)
-    c_alpha = cos(alpha)
+    if is_scalar:
+        alpha = _atan2(w, u)
+        s_alpha = _sin(alpha)
+        c_alpha = _cos(alpha)
+    else:
+        alpha = atan2(w, u)
+        s_alpha = sin(alpha)
+        c_alpha = cos(alpha)
 
     # Optimized beta calculation
     arg_beta = v / V
@@ -176,7 +185,7 @@ def equations_of_motion(t, state, aircraft, control):
     if is_scalar:
         if arg_beta < -1.0: arg_beta = -1.0
         elif arg_beta > 1.0: arg_beta = 1.0
-        beta = asin(float(arg_beta))
+        beta = _asin(float(arg_beta))
     else:
         beta = asin(np.clip(arg_beta, -1, 1))
 
@@ -332,10 +341,10 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     Used by TrimSolver for ~2x performance.
     """
     # Optimized imports for scalar path
-    sin = math.sin
-    cos = math.cos
-    atan2 = math.atan2
-    sqrt = math.sqrt
+    # sin = math.sin
+    # cos = math.cos
+    # atan2 = math.atan2
+    # sqrt = math.sqrt
 
     # Unpack state (u, w, q, theta, z are relevant)
     # state is expected to be a list/tuple or numpy array.
@@ -401,11 +410,11 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
         V = 0.1
         inv_V = 10.0 # 1.0 / 0.1
     else:
-        V = sqrt(V_sq)
+        V = _sqrt(V_sq)
         inv_V = 1.0 / V
 
     # Aerodynamic Angles
-    alpha = atan2(w, u)
+    alpha = _atan2(w, u)
 
     # Optimization: Use algebraic trig for alpha (avoids 2 trig calls)
     # sin(alpha) = w/V, cos(alpha) = u/V
@@ -442,8 +451,8 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     Fz = Fz_aero
 
     # Gravity (phi=0)
-    s_th = sin(theta)
-    c_th = cos(theta)
+    s_th = _sin(theta)
+    c_th = _cos(theta)
 
     Gx = -m * g * s_th
     Gz = m * g * c_th
