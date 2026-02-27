@@ -18,6 +18,19 @@ app = FastAPI()
 # Global storage for rate limiting (IP -> list of timestamps)
 request_counts = defaultdict(list)
 
+class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # 1 MB limit (1 * 1024 * 1024 bytes)
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                length = int(content_length)
+                if length > 1048576:
+                    return JSONResponse(status_code=413, content={"detail": "Payload Too Large"})
+            except ValueError:
+                return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+        return await call_next(request)
+
 class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Get client IP
@@ -93,6 +106,7 @@ class SecureHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(SecureHeadersMiddleware)
+app.add_middleware(RequestSizeLimitMiddleware)
 
 class AircraftParameters(BaseModel):
     # Core Geometry & Mass
