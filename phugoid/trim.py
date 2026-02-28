@@ -34,11 +34,12 @@ class TrimSolver:
             u = velocity * math.cos(alpha)
             w = velocity * math.sin(alpha)
 
-            state = [u, 0, w, 0, 0, 0, 0, theta, 0, 0, 0, -altitude]
-            control = [elevator, 0, 0, throttle]
+            # Optimization: pass lists of floats to avoid np.array overhead in tight loops
+            state = [u, 0.0, w, 0.0, 0.0, 0.0, 0.0, theta, 0.0, 0.0, 0.0, -altitude]
+            control = [elevator, 0.0, 0.0, throttle]
 
             derivs = longitudinal_equations_of_motion(0, state, self.aircraft, control)
-            return np.array([derivs[0], derivs[2], derivs[4]])
+            return [derivs[0], derivs[2], derivs[4]]
 
         def jacobian(x, eps=1e-5):
             J = np.zeros((3, 3))
@@ -47,8 +48,11 @@ class TrimSolver:
                 x_plus = list(x)
                 x_plus[i] += eps
                 f_plus = objective(x_plus)
-                J[:, i] = (f_plus - f0) / eps
-            return J, f0
+                # Optimization: manually compute the column to avoid array operations
+                J[:, i] = [(f_plus[0] - f0[0]) / eps,
+                           (f_plus[1] - f0[1]) / eps,
+                           (f_plus[2] - f0[2]) / eps]
+            return J, np.array(f0)
 
         # Custom Newton-Raphson solver
         x = np.array([0.05, -0.05, 0.5])
