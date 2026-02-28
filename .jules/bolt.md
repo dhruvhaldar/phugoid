@@ -39,3 +39,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-02-17 - [Optimizing Euclidean Norm in Python]
 **Learning:** In Python 3.12+, `math.hypot(x, y, z)` is slightly slower (~37%) than `math.sqrt(x*x + y*y + z*z)` for scalar inputs, likely due to internal overflow checks. Additionally, calculating `V**2` using `pow(V, 2)` is significantly slower (~2x) than simple multiplication `V*V` or reusing the squared sum from the norm calculation.
 **Action:** When computing magnitude and its square (e.g., for dynamic pressure `0.5 * rho * V**2`), calculate `V_sq = sum(x**2)` first, then `V = sqrt(V_sq)`, and use `V_sq` directly to avoid the expensive `pow` call.
+
+## 2026-02-17 - [Avoiding NumPy Array Construction in Tight Numerical Solver Loops]
+**Learning:** Inside numerical solvers like a Newton-Raphson scheme in `TrimSolver`, constructing and returning intermediate `numpy.ndarray` vectors (like state vectors and derivative arrays) on every iteration carries significant constant-time instantiation overhead. This overhead adds up when solving small state dimensions ($N=3$). Returning raw Python `list`s out of the objective function and explicitly assigning elements into Jacobian matrix columns bypasses this instantiation overhead.
+**Action:** For $N \le 3$ inner loops of a numerical solver, return and pass around Python `list` objects instead of `np.array` across boundaries when vectorization gains are outweighed by instantiation costs. Cast back to `np.array` *only* before calling `np.linalg.solve`.
