@@ -19,3 +19,7 @@
 ## 2026-11-20 - Stale Results Visualization
 **Learning:** When input parameters are modified after a successful calculation, leaving the old results fully visible can lead to dangerous misinterpretation. Users assume the visible data reflects the current configuration.
 **Action:** Implement a "Stale State" by visually dimming outdated results (opacity/grayscale) and adding a clear warning label ("Recalculate"). This forces the user to acknowledge the discrepancy before proceeding.
+
+## 2026-11-21 - Button State and Rich Content
+**Learning:** Overwriting a button's `textContent` to show a loading state (e.g., "Calculating...") permanently destroys any inner HTML structure, such as keyboard shortcut hints or icons, making them disappear when the original text is restored.
+**Action:** When updating a button's state that contains child elements, use `innerHTML` to save and restore the content, rather than `textContent`, to preserve embedded UX enhancements.

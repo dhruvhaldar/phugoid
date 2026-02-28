@@ -117,14 +117,15 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     e.preventDefault();
     const btn = document.getElementById('calculate-btn');
     const errorDiv = document.getElementById('error-message');
-    const originalText = 'Calculate Trim & Stability';
+    const originalText = btn.innerHTML;
 
     // Reset state
     errorDiv.textContent = '';
     document.getElementById('status-region').textContent = '';
     btn.classList.add('loading');
     btn.disabled = true;
-    btn.textContent = 'Calculating...';
+    btn.setAttribute('aria-busy', 'true');
+    btn.innerHTML = 'Calculating...';
 
     try {
         const velocity = parseFloat(document.getElementById('velocity').value);
@@ -211,7 +212,8 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     } finally {
         btn.classList.remove('loading');
         btn.disabled = false;
-        btn.textContent = originalText;
+        btn.removeAttribute('aria-busy');
+        btn.innerHTML = originalText;
     }
 });
 
