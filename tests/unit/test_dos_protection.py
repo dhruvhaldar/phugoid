@@ -122,3 +122,25 @@ def test_input_validation_velocity_limit():
              for err in error_detail:
                  if "velocity" in err["loc"]:
                      assert False, f"Velocity 1000 should be valid but got error: {err}"
+
+def test_request_size_limit():
+    """Verify that requests with a Content-Length > 1MB are rejected."""
+    # Test valid size
+    payload = {
+        "velocity": 100.0,
+        "altitude": 1000.0
+    }
+    response = client.post("/api/trim", json=payload)
+    assert response.status_code in [200, 422]  # Should not be 413
+
+    # Test payload too large via content-length header
+    headers = {"Content-Length": str(1048576 + 1)}
+    response = client.post("/api/trim", json=payload, headers=headers)
+    assert response.status_code == 413
+    assert response.json()["detail"] == "Payload Too Large"
+
+    # Test invalid content-length header
+    headers = {"Content-Length": "invalid"}
+    response = client.post("/api/trim", json=payload, headers=headers)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid Content-Length"
