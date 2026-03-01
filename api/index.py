@@ -29,6 +29,11 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
                     return JSONResponse(status_code=413, content={"detail": "Payload Too Large"})
             except ValueError:
                 return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+        elif "chunked" in request.headers.get("transfer-encoding", "").lower():
+            # If chunked encoding, we cannot determine content length beforehand,
+            # so we reject it to avoid memory exhaustion DOS.
+            return JSONResponse(status_code=411, content={"detail": "Length Required"})
+
         return await call_next(request)
 
 class RateLimitMiddleware(BaseHTTPMiddleware):

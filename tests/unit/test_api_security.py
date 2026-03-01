@@ -84,3 +84,12 @@ def test_rate_limiting():
 
     # Ensure headers are present even on 429
     assert "X-Frame-Options" in response.headers
+
+def test_chunked_transfer_encoding_rejection():
+    # Ensure that chunked transfer encoding is blocked to prevent DoS via infinite chunking
+    request_counts.clear()
+    # TestClient in httpx will overwrite chunked logic if we provide 'content'.
+    # By providing None for content/data, we can force the headers to stay as-is.
+    response = client.post("/api/trim", headers={"Transfer-Encoding": "chunked"})
+    assert response.status_code == 411
+    assert response.json() == {"detail": "Length Required"}
