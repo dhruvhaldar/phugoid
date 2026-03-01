@@ -80,6 +80,35 @@ section h2 {
     color: #fff;
 }
 
+/* Accessibility */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 20px;
+    background-color: var(--accent-yellow);
+    color: var(--text-color);
+    padding: 10px 15px;
+    border: var(--border-width) solid var(--border-color);
+    box-shadow: var(--shadow-solid);
+    font-weight: 900;
+    text-transform: uppercase;
+    text-decoration: none;
+    z-index: 1000;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 20px;
+    outline: none;
+}
+
+a:focus-visible {
+    outline: none;
+    background-color: var(--accent-yellow);
+    color: var(--text-color);
+    box-shadow: inset 4px 4px 0px 0px rgba(0, 0, 0, 0.1), 0 0 0 2px var(--bg-color), 0 0 0 4px var(--text-color);
+}
+
 /* Form Elements */
 .input-group {
     margin-bottom: 20px;
