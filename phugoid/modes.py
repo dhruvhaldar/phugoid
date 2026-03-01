@@ -8,12 +8,11 @@ class Mode:
 
     def _analyze(self):
         n = self.eigenvalue.real
-        omega = self.eigenvalue.imag
-
-        wn = np.sqrt(n**2 + omega**2)
+        # Optimization: use abs() for complex magnitude instead of np.sqrt(real**2 + imag**2)
+        wn = float(abs(self.eigenvalue))
 
         if wn == 0:
-            zeta = 0
+            zeta = 0.0
         else:
             zeta = -n / wn
 
@@ -24,13 +23,12 @@ class Mode:
 
 def calculate_damping_ratio(eigenvalue):
     n = eigenvalue.real
-    omega = eigenvalue.imag
-    wn = np.sqrt(n**2 + omega**2)
+    # Optimization: use abs() for complex magnitude instead of np.sqrt(real**2 + imag**2)
+    wn = float(abs(eigenvalue))
     if wn == 0:
         return 0.0
     return -n / wn
 
 def calculate_natural_frequency(eigenvalue):
-    n = eigenvalue.real
-    omega = eigenvalue.imag
-    return np.sqrt(n**2 + omega**2)
+    # Optimization: use abs() for complex magnitude instead of np.sqrt(real**2 + imag**2)
+    return float(abs(eigenvalue))
