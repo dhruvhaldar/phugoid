@@ -9,3 +9,7 @@
 ## 2026-03-01 - [Skip Links & Keyboard Focus in Neubrutalism]
 **Learning:** Custom brutalist UI themes often unintentionally disable native focus rings by overriding browser defaults without providing an alternative. Adding explicit `:focus-visible` styling (using theme-consistent thick borders and inset shadows) is crucial for links, especially utility links like a "Skip to main content" link, to maintain keyboard accessibility without breaking the aesthetic.
 **Action:** Always verify keyboard navigation (Tab order) on interactive elements. When building "Skip to content" links, position them absolutely off-screen (`top: -100px`) and move them on-screen dynamically during `:focus`. Apply a global `a:focus-visible` rule using existing design tokens for a consistent focus ring.
+
+## 2026-03-05 - [Enhanced CSS-only Form Validation Feedback]
+**Learning:** Using CSS `:invalid` in combination with sibling combinators (`~`) allows for rich, accessible inline validation feedback (e.g., coloring help text red and adding warning icons) entirely without JavaScript, keeping the implementation simple and lightweight.
+**Action:** When relying on native HTML validation, extend visual cues beyond just the input border by using `input:invalid ~ .help-text` to ensure the error context itself also draws attention.

@@ -555,3 +555,16 @@ input:invalid {
     margin-bottom: 20px;
     box-shadow: 4px 4px 0px 0px #111;
 }
+
+/* UX Improvement: Enhanced Inline Validation Feedback */
+input:invalid {
+    border-color: var(--accent-red);
+}
+
+input:invalid ~ .help-text {
+    color: var(--accent-red);
+}
+
+input:invalid ~ .help-text::before {
+    content: "⚠️ ";
+}
