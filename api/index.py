@@ -110,8 +110,8 @@ class SecureHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 app.add_middleware(RateLimitMiddleware)
-app.add_middleware(SecureHeadersMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware)
+app.add_middleware(SecureHeadersMiddleware)
 
 class AircraftParameters(BaseModel):
     # Core Geometry & Mass
