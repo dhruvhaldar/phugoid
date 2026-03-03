@@ -13,3 +13,7 @@
 ## 2026-03-05 - [Enhanced CSS-only Form Validation Feedback]
 **Learning:** Using CSS `:invalid` in combination with sibling combinators (`~`) allows for rich, accessible inline validation feedback (e.g., coloring help text red and adding warning icons) entirely without JavaScript, keeping the implementation simple and lightweight.
 **Action:** When relying on native HTML validation, extend visual cues beyond just the input border by using `input:invalid ~ .help-text` to ensure the error context itself also draws attention.
+
+## 2026-03-05 - [Select-on-Focus for Numerical Inputs]
+**Learning:** In technical applications, users rarely want to edit a single digit of an existing number (e.g., changing 51.44 to 51.45). They usually want to overwrite the entire value with a new one. The default browser behavior of placing the cursor at the end or start of the input makes this cumbersome, requiring manual selection or multiple backspaces.
+**Action:** Implement a `focus` event listener on `input[type="number"]` to automatically call `.select()`. This micro-interaction significantly reduces friction for data entry in engineering/technical forms.
