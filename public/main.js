@@ -265,3 +265,11 @@ Theta: ${theta} deg`;
         }
     });
 }
+
+// UX Improvement: Auto-select number inputs on focus (using delegation)
+document.addEventListener('focusin', function(e) {
+    if (e.target.matches('input[type="number"]')) {
+        // Use a short timeout to prevent mouseup from deselecting the text in some browsers
+        setTimeout(() => e.target.select(), 10);
+    }
+});
