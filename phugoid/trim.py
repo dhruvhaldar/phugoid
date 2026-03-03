@@ -102,7 +102,8 @@ class TrimSolver:
 
         for i in range(max_iter):
             J, f0 = jacobian(x)
-            error = math.sqrt(f0[0]**2 + f0[1]**2 + f0[2]**2)
+            # Optimization: Use explicit multiplication instead of **2 for performance
+            error = math.sqrt(f0[0]*f0[0] + f0[1]*f0[1] + f0[2]*f0[2])
             
             if error < tol:
                 success = True
@@ -127,7 +128,8 @@ class TrimSolver:
             x = [0.1, -0.1, 0.8]
             for i in range(max_iter):
                 J, f0 = jacobian(x)
-                error = math.sqrt(f0[0]**2 + f0[1]**2 + f0[2]**2)
+                # Optimization: Use explicit multiplication instead of **2 for performance
+                error = math.sqrt(f0[0]*f0[0] + f0[1]*f0[1] + f0[2]*f0[2])
                 
                 if error < tol:
                     success = True

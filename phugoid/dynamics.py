@@ -276,7 +276,8 @@ def equations_of_motion(t, state, aircraft, control):
     # M_total = [L_moment, M_moment, N_moment]
 
     term1 = (Izz - Iyy) * q * r - Ixz * p * q
-    term2 = (Ixx - Izz) * p * r + Ixz * (p**2 - r**2)
+    # Optimization: Use explicit multiplication instead of **2 for performance
+    term2 = (Ixx - Izz) * p * r + Ixz * (p*p - r*r)
     term3 = (Iyy - Ixx) * p * q + Ixz * q * r
 
     # q_dot is decoupled if Ixy=Iyz=0
@@ -286,7 +287,8 @@ def equations_of_motion(t, state, aircraft, control):
     # [ Ixx  -Ixz ] [ p_dot ] = [ L - term1 ]
     # [ -Ixz  Izz ] [ r_dot ] = [ N - term3 ]
 
-    det = Ixx * Izz - Ixz**2
+    # Optimization: Use explicit multiplication instead of **2 for performance
+    det = Ixx * Izz - Ixz*Ixz
     pdot = (Izz * (L_moment - term1) + Ixz * (N_moment - term3)) / det
     rdot = (Ixz * (L_moment - term1) + Ixx * (N_moment - term3)) / det
 
