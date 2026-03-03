@@ -23,26 +23,29 @@ def solve_3x3(A, b):
     # Optimization: Explicitly solve 3x3 system without np.linalg.solve
     # np.linalg.solve adds significant overhead (~40-50%) in this tight loop
     # due to numpy array instantiation. Explicit calculation is ~6x faster.
-    det = (A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) -
-           A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) +
-           A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]))
+
+    # Optimization: Flatten array access to avoid repeated nested indexing overhead
+    a00, a01, a02 = A[0]
+    a10, a11, a12 = A[1]
+    a20, a21, a22 = A[2]
+
+    # Pre-calculate common 2x2 determinants
+    m11_22 = a11 * a22 - a12 * a21
+    m10_22 = a10 * a22 - a12 * a20
+    m10_21 = a10 * a21 - a11 * a20
+
+    det = a00 * m11_22 - a01 * m10_22 + a02 * m10_21
 
     if abs(det) < 1e-15:
         raise SingularMatrixError("Singular matrix")
 
     inv_det = 1.0 / det
 
-    x0 = ((A[1][1] * A[2][2] - A[1][2] * A[2][1]) * b[0] +
-          (A[0][2] * A[2][1] - A[0][1] * A[2][2]) * b[1] +
-          (A[0][1] * A[1][2] - A[0][2] * A[1][1]) * b[2]) * inv_det
+    b0, b1, b2 = b
 
-    x1 = ((A[1][2] * A[2][0] - A[1][0] * A[2][2]) * b[0] +
-          (A[0][0] * A[2][2] - A[0][2] * A[2][0]) * b[1] +
-          (A[0][2] * A[1][0] - A[0][0] * A[1][2]) * b[2]) * inv_det
-
-    x2 = ((A[1][0] * A[2][1] - A[1][1] * A[2][0]) * b[0] +
-          (A[0][1] * A[2][0] - A[0][0] * A[2][1]) * b[1] +
-          (A[0][0] * A[1][1] - A[0][1] * A[1][0]) * b[2]) * inv_det
+    x0 = (m11_22 * b0 + (a02 * a21 - a01 * a22) * b1 + (a01 * a12 - a02 * a11) * b2) * inv_det
+    x1 = (-m10_22 * b0 + (a00 * a22 - a02 * a20) * b1 + (a02 * a10 - a00 * a12) * b2) * inv_det
+    x2 = (m10_21 * b0 + (a01 * a20 - a00 * a21) * b1 + (a00 * a11 - a01 * a10) * b2) * inv_det
 
     return [x0, x1, x2]
 
