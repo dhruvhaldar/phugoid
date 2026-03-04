@@ -81,6 +81,10 @@ section h2 {
 }
 
 /* Accessibility */
+section[tabindex="-1"]:focus {
+    outline: none;
+}
+
 .skip-link {
     position: absolute;
     top: -100px;
@@ -567,4 +571,19 @@ input:invalid ~ .help-text {
 
 input:invalid ~ .help-text::before {
     content: "⚠️ ";
+}
+
+/* UX Improvement: Flash animation for auto-filled inputs */
+@keyframes flash-update {
+    0% {
+        background-color: var(--accent-yellow);
+        box-shadow: inset 4px 4px 0px 0px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+        background-color: #fff;
+    }
+}
+
+.flash-update {
+    animation: flash-update 1s ease-out;
 }

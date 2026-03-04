@@ -23,3 +23,7 @@
 ## 2026-11-21 - Button State and Rich Content
 **Learning:** Overwriting a button's `textContent` to show a loading state (e.g., "Calculating...") permanently destroys any inner HTML structure, such as keyboard shortcut hints or icons, making them disappear when the original text is restored.
 **Action:** When updating a button's state that contains child elements, use `innerHTML` to save and restore the content, rather than `textContent`, to preserve embedded UX enhancements.
+
+## 2026-11-22 - Visual Feedback for Auto-Filled Forms
+**Learning:** When inputs are automatically filled (like via a "Preset" button), users often fail to notice exactly which values changed, especially in complex forms. This lack of immediate feedback can cause uncertainty.
+**Action:** Always provide brief, non-intrusive visual feedback (like a quick background color flash via CSS keyframes) when programmatically updating input values. This draws the user's eye directly to the change without requiring manual interaction.
