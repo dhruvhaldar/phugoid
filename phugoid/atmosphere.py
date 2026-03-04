@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from functools import lru_cache
 
 # Constants
@@ -34,7 +35,7 @@ def atmosphere_scalar(altitude_val):
     # Optimized power calculation
     # P = P0 * (1 - L * h_clamped / T0) ** (g / (R * L))
     base = 1.0 - BASE_FACTOR * h_clamped
-    P = P0 * (base ** EXPONENT)
+    P = P0 * math.pow(base, EXPONENT)
 
     rho = P / (R * T)
     return float(T), float(P), float(rho)
