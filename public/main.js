@@ -27,6 +27,21 @@ presetBtns.forEach(btn => {
         velocityInput.value = btn.dataset.v;
         altitudeInput.value = btn.dataset.h;
 
+        // Micro-UX: Briefly flash inputs to draw attention to changed values
+        velocityInput.classList.remove('flash-update');
+        altitudeInput.classList.remove('flash-update');
+
+        // Trigger reflow to restart animation
+        void velocityInput.offsetWidth;
+
+        velocityInput.classList.add('flash-update');
+        altitudeInput.classList.add('flash-update');
+
+        setTimeout(() => {
+            velocityInput.classList.remove('flash-update');
+            altitudeInput.classList.remove('flash-update');
+        }, 1000);
+
         // Visual feedback
         presetBtns.forEach(b => {
             b.classList.remove('selected');

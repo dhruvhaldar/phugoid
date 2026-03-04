@@ -23,11 +23,11 @@
     </header>
 
     <main>
-        <section id="controls">
+        <section id="controls" tabindex="-1">
             <h2>Flight Conditions</h2>
             <div id="status-region" class="sr-only" role="status" aria-live="polite"></div>
             <form id="flight-controls">
-                <div class="presets">
+                <div class="presets" role="group" aria-label="Flight condition presets">
                     <button type="button" class="preset-btn" data-v="51.44" data-h="1524" aria-pressed="false">Cruise
                         (100kts)</button>
                     <button type="button" class="preset-btn" data-v="33.4" data-h="300" aria-pressed="false">Approach
@@ -36,9 +36,9 @@
                 <div class="input-group">
                     <label for="velocity">Velocity (m/s) <span style="color: var(--accent-red);" aria-hidden="true">*</span> <span id="velocity-unit-display"
                             class="unit-hint"></span></label>
-                    <input type="number" id="velocity" value="51.44" step="any" min="0.1" required
+                    <input type="number" id="velocity" value="51.44" step="any" min="0.1" max="1000" required
                         aria-describedby="velocity-help">
-                    <small id="velocity-help" class="help-text">Min: 0.1 m/s (Positive value)</small>
+                    <small id="velocity-help" class="help-text">Min: 0.1 m/s, Max: 1000 m/s</small>
                 </div>
                 <div class="input-group">
                     <label for="altitude">Altitude (m) <span style="color: var(--accent-red);" aria-hidden="true">*</span> <span id="altitude-unit-display"
