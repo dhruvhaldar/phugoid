@@ -74,9 +74,7 @@ class TrimSolver:
             derivs = longitudinal_equations_of_motion(0, state, self.aircraft, control)
             return [derivs[0], derivs[2], derivs[4]]
 
-        def jacobian(x, eps=1e-5):
-            f0 = objective(x)
-
+        def jacobian(x, f0, eps=1e-5):
             # Optimization: Use lists entirely instead of numpy arrays to avoid
             # constant-time instantiation overhead in this tight inner loop.
             x_plus0 = [x[0] + eps, x[1], x[2]]
@@ -95,7 +93,7 @@ class TrimSolver:
                 [(f_plus0[2] - f0[2]) / eps, (f_plus1[2] - f0[2]) / eps, (f_plus2[2] - f0[2]) / eps]
             ]
 
-            return J, f0
+            return J
 
         # Custom Newton-Raphson solver
         x = [0.05, -0.05, 0.5]
@@ -104,7 +102,7 @@ class TrimSolver:
         success = False
 
         for i in range(max_iter):
-            J, f0 = jacobian(x)
+            f0 = objective(x)
             # Optimization: Use explicit multiplication instead of **2 for performance
             error = math.sqrt(f0[0]*f0[0] + f0[1]*f0[1] + f0[2]*f0[2])
             
@@ -112,6 +110,7 @@ class TrimSolver:
                 success = True
                 break
                 
+            J = jacobian(x, f0)
             try:
                 # Solve J * dx = -f0
                 dx = solve_3x3(J, [-f0[0], -f0[1], -f0[2]])
@@ -130,7 +129,7 @@ class TrimSolver:
             # Try alternate guess
             x = [0.1, -0.1, 0.8]
             for i in range(max_iter):
-                J, f0 = jacobian(x)
+                f0 = objective(x)
                 # Optimization: Use explicit multiplication instead of **2 for performance
                 error = math.sqrt(f0[0]*f0[0] + f0[1]*f0[1] + f0[2]*f0[2])
                 
@@ -138,6 +137,7 @@ class TrimSolver:
                     success = True
                     break
                     
+                J = jacobian(x, f0)
                 try:
                     dx = solve_3x3(J, [-f0[0], -f0[1], -f0[2]])
                     x[0] += 0.5 * dx[0]
