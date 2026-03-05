@@ -75,6 +75,7 @@ class TrimSolver:
             return [derivs[0], derivs[2], derivs[4]]
 
         def jacobian(x, f0, eps=1e-5):
+            inv_eps = 1.0 / eps
             # Optimization: Use lists entirely instead of numpy arrays to avoid
             # constant-time instantiation overhead in this tight inner loop.
             x_plus0 = [x[0] + eps, x[1], x[2]]
@@ -88,9 +89,9 @@ class TrimSolver:
 
             # Construct row-major J for numpy solve
             J = [
-                [(f_plus0[0] - f0[0]) / eps, (f_plus1[0] - f0[0]) / eps, (f_plus2[0] - f0[0]) / eps],
-                [(f_plus0[1] - f0[1]) / eps, (f_plus1[1] - f0[1]) / eps, (f_plus2[1] - f0[1]) / eps],
-                [(f_plus0[2] - f0[2]) / eps, (f_plus1[2] - f0[2]) / eps, (f_plus2[2] - f0[2]) / eps]
+                [(f_plus0[0] - f0[0]) * inv_eps, (f_plus1[0] - f0[0]) * inv_eps, (f_plus2[0] - f0[0]) * inv_eps],
+                [(f_plus0[1] - f0[1]) * inv_eps, (f_plus1[1] - f0[1]) * inv_eps, (f_plus2[1] - f0[1]) * inv_eps],
+                [(f_plus0[2] - f0[2]) * inv_eps, (f_plus1[2] - f0[2]) * inv_eps, (f_plus2[2] - f0[2]) * inv_eps]
             ]
 
             return J

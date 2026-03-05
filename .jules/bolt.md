@@ -61,3 +61,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-03-04 - [Avoiding Redundant Jacobian Calculations in Custom Solvers]
 **Learning:** In custom Newton-Raphson solvers (like `TrimSolver`), evaluating the base objective function (`f0`) inside the Jacobian calculation function means that the Jacobian and its expensive finite difference perturbations (e.g., `f_plus0`, `f_plus1`) will be evaluated even on the final, converged iteration where the error is below tolerance and the loop will immediately break.
 **Action:** Extract the base objective function evaluation (`f0`) to the main solver loop, evaluate convergence, and only pass `f0` into the Jacobian function if a new iteration is actually required. This skips the final unnecessary Jacobian calculation, saving multiple objective function calls.
+
+## 2024-05-24 - [Avoid Redundant Division in List Comprehensions]
+**Learning:** Inside tight loops (e.g., `Linearizer.compute_jacobian` and `TrimSolver.find_trim.jacobian`), calculating the inverse of the step size (`inv_step = 1.0 / step`) outside the loops and replacing division (`/ step`) with multiplication (`* inv_step`) yields performance improvements by eliminating repeated, expensive floating-point division operations.
+**Action:** When performing numerical approximations (like finite differences) over arrays or list comprehensions, always calculate the inverse of the step size outside the loop and multiply by it inside.

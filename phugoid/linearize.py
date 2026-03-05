@@ -37,6 +37,7 @@ class Linearizer:
         f_nominal = equations_of_motion(0, x_trim_list, self.aircraft, u_trim_list)
 
         # Compute A matrix (df/dx) - perturbation of state
+        inv_step = 1.0 / step
         for i in range(n_state):
             # Optimization: Skip horizontal position states (x=9, y=10)
             # The equations of motion for a flat-earth model with uniform atmosphere
@@ -55,7 +56,7 @@ class Linearizer:
 
             # Fill column i of A
             # Forward difference: (f(x+h) - f(x)) / h
-            col = [(fp - fm) / step for fp, fm in zip(f_plus, f_nominal)]
+            col = [(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]
             A[:, i] = col
 
         B = np.zeros((n_state, n_control))
@@ -67,7 +68,7 @@ class Linearizer:
 
             f_plus = equations_of_motion(0, x_trim_list, self.aircraft, u_plus)
 
-            col = [(fp - fm) / step for fp, fm in zip(f_plus, f_nominal)]
+            col = [(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]
             B[:, i] = col
 
         return A, B
