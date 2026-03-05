@@ -36,6 +36,9 @@ class Linearizer:
         # Reuse this for forward difference calculation to save ~50% of EoM calls
         f_nominal = equations_of_motion(0, x_trim_list, self.aircraft, u_trim_list)
 
+        # Optimization: Pre-calculate inverse step to replace division with multiplication
+        inv_step = 1.0 / step
+
         # Compute A matrix (df/dx) - perturbation of state
         for i in range(n_state):
             # Optimization: Skip horizontal position states (x=9, y=10)
@@ -45,29 +48,36 @@ class Linearizer:
             if i in [9, 10]:
                 continue
 
-            # Perturb state i
-            x_plus = list(x_trim_list) # Shallow copy is enough for list of floats
-            x_plus[i] += step
+            # Optimization: Perturb state i in place instead of creating a new list copy
+            old_val = x_trim_list[i]
+            x_trim_list[i] = old_val + step
 
             # Call scalar EoM
             # equations_of_motion returns list for list input
-            f_plus = equations_of_motion(0, x_plus, self.aircraft, u_trim_list)
+            f_plus = equations_of_motion(0, x_trim_list, self.aircraft, u_trim_list)
+
+            # Revert perturbation
+            x_trim_list[i] = old_val
 
             # Fill column i of A
-            # Forward difference: (f(x+h) - f(x)) / h
-            col = [(fp - fm) / step for fp, fm in zip(f_plus, f_nominal)]
+            # Forward difference: (f(x+h) - f(x)) * inv_step
+            col = [(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]
             A[:, i] = col
 
         B = np.zeros((n_state, n_control))
 
         # Compute B matrix (df/du) - perturbation of control
         for i in range(n_control):
-            u_plus = list(u_trim_list)
-            u_plus[i] += step
+            # Optimization: Perturb control i in place instead of creating a new list copy
+            old_val = u_trim_list[i]
+            u_trim_list[i] = old_val + step
 
-            f_plus = equations_of_motion(0, x_trim_list, self.aircraft, u_plus)
+            f_plus = equations_of_motion(0, x_trim_list, self.aircraft, u_trim_list)
 
-            col = [(fp - fm) / step for fp, fm in zip(f_plus, f_nominal)]
+            # Revert perturbation
+            u_trim_list[i] = old_val
+
+            col = [(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]
             B[:, i] = col
 
         return A, B

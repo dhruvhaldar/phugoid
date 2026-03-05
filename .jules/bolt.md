@@ -61,3 +61,11 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-03-04 - [Avoiding Redundant Jacobian Calculations in Custom Solvers]
 **Learning:** In custom Newton-Raphson solvers (like `TrimSolver`), evaluating the base objective function (`f0`) inside the Jacobian calculation function means that the Jacobian and its expensive finite difference perturbations (e.g., `f_plus0`, `f_plus1`) will be evaluated even on the final, converged iteration where the error is below tolerance and the loop will immediately break.
 **Action:** Extract the base objective function evaluation (`f0`) to the main solver loop, evaluate convergence, and only pass `f0` into the Jacobian function if a new iteration is actually required. This skips the final unnecessary Jacobian calculation, saving multiple objective function calls.
+
+## 2024-05-24 - [Optimizing Finite Difference Array Allocations]
+**Learning:** In numerical derivative calculations (like `Linearizer.compute_jacobian`), making shallow copies of state lists (`list(x_trim)`) for each perturbation step adds measurable allocation overhead in tight loops.
+**Action:** Mutate the state lists in-place for the perturbation, call the objective function, and then revert the list element to its original value to avoid array/list allocations.
+
+## 2024-05-24 - [Optimizing Step Division in Finite Differences]
+**Learning:** Repeated division by the small perturbation `step` inside list comprehensions across matrix dimensions adds unnecessary overhead.
+**Action:** Pre-calculate the inverse of the step size (`inv_step = 1.0 / step`) outside the loops and use explicit multiplication.
