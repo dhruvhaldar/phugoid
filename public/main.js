@@ -142,6 +142,10 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     btn.setAttribute('aria-busy', 'true');
     btn.innerHTML = 'Calculating...';
 
+    // Disable inputs and preset buttons during calculation
+    const inputs = document.querySelectorAll('#flight-controls input, .preset-btn');
+    inputs.forEach(input => input.disabled = true);
+
     try {
         const velocity = parseFloat(document.getElementById('velocity').value);
         const altitude = parseFloat(document.getElementById('altitude').value);
@@ -229,6 +233,9 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         btn.disabled = false;
         btn.removeAttribute('aria-busy');
         btn.innerHTML = originalText;
+
+        // Re-enable inputs
+        inputs.forEach(input => input.disabled = false);
     }
 });
 
