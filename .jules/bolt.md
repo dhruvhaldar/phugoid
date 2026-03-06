@@ -69,3 +69,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2024-05-24 - [Optimizing Step Division in Finite Differences]
 **Learning:** Repeated division by the small perturbation `step` inside list comprehensions across matrix dimensions adds unnecessary overhead.
 **Action:** Pre-calculate the inverse of the step size (`inv_step = 1.0 / step`) outside the loops and use explicit multiplication.
+
+## 2026-03-30 - [Pre-calculating Inverses of Constants in Hot Loops]
+**Learning:** In tight mathematical loops like `equations_of_motion`, dynamically calculating invariants (like the inertia determinant `det = Ixx * Izz - Ixz*Ixz`) and then performing division (`1 / det`) adds measurable overhead.
+**Action:** Identify domain invariants (like mass or inertia derivations) and pre-calculate them during class instantiation (`Aircraft.__init__`). Furthermore, store the *inverse* of the value to replace runtime division with explicit multiplication, which is significantly faster.
