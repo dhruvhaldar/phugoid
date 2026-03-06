@@ -345,7 +345,7 @@ input:invalid {
 
 .preset-btn.selected {
     background-color: var(--accent-blue);
-    color: #fff;
+    color: var(--text-color);
 }
 
 /* Copy Trim Results Button */
@@ -495,7 +495,7 @@ input:invalid {
 
 .portfolio-link:hover {
     background-color: var(--accent-blue);
-    color: #fff;
+    color: var(--text-color);
     transform: translate(2px, 2px);
     box-shadow: 2px 2px 0px 0px #111;
 }
