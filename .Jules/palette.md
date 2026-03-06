@@ -27,3 +27,7 @@
 ## 2026-11-22 - Visual Feedback for Auto-Filled Forms
 **Learning:** When inputs are automatically filled (like via a "Preset" button), users often fail to notice exactly which values changed, especially in complex forms. This lack of immediate feedback can cause uncertainty.
 **Action:** Always provide brief, non-intrusive visual feedback (like a quick background color flash via CSS keyframes) when programmatically updating input values. This draws the user's eye directly to the change without requiring manual interaction.
+
+## 2026-11-23 - High-Luminance Accent Colors
+**Learning:** When using bright, high-luminance accent colors (like cyan or yellow) as backgrounds for interactive elements, using white text (#fff) causes severe contrast failures (often below 2:1).
+**Action:** Always verify contrast ratios for new design tokens. Use dark text (e.g., `var(--text-color)`) on high-luminance backgrounds to maintain readability and meet accessibility standards.
