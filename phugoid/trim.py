@@ -77,20 +77,29 @@ class TrimSolver:
         def jacobian(x, f0, eps=1e-5):
             # Optimization: Use lists entirely instead of numpy arrays to avoid
             # constant-time instantiation overhead in this tight inner loop.
-            x_plus0 = [x[0] + eps, x[1], x[2]]
-            f_plus0 = objective(x_plus0)
+            # Mutate state lists in-place for the perturbation to avoid array/list allocations.
+            inv_eps = 1.0 / eps
 
-            x_plus1 = [x[0], x[1] + eps, x[2]]
-            f_plus1 = objective(x_plus1)
+            old_val = x[0]
+            x[0] = old_val + eps
+            f_plus0 = objective(x)
+            x[0] = old_val
 
-            x_plus2 = [x[0], x[1], x[2] + eps]
-            f_plus2 = objective(x_plus2)
+            old_val = x[1]
+            x[1] = old_val + eps
+            f_plus1 = objective(x)
+            x[1] = old_val
+
+            old_val = x[2]
+            x[2] = old_val + eps
+            f_plus2 = objective(x)
+            x[2] = old_val
 
             # Construct row-major J for numpy solve
             J = [
-                [(f_plus0[0] - f0[0]) / eps, (f_plus1[0] - f0[0]) / eps, (f_plus2[0] - f0[0]) / eps],
-                [(f_plus0[1] - f0[1]) / eps, (f_plus1[1] - f0[1]) / eps, (f_plus2[1] - f0[1]) / eps],
-                [(f_plus0[2] - f0[2]) / eps, (f_plus1[2] - f0[2]) / eps, (f_plus2[2] - f0[2]) / eps]
+                [(f_plus0[0] - f0[0]) * inv_eps, (f_plus1[0] - f0[0]) * inv_eps, (f_plus2[0] - f0[0]) * inv_eps],
+                [(f_plus0[1] - f0[1]) * inv_eps, (f_plus1[1] - f0[1]) * inv_eps, (f_plus2[1] - f0[1]) * inv_eps],
+                [(f_plus0[2] - f0[2]) * inv_eps, (f_plus1[2] - f0[2]) * inv_eps, (f_plus2[2] - f0[2]) * inv_eps]
             ]
 
             return J
