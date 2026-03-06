@@ -15,6 +15,9 @@ class Aircraft:
         self.Izz = 2666.9
         self.Ixz = 0.0
 
+        # Pre-calculated inertia determinant for equations_of_motion
+        self.Ixx_Izz_det = self.Ixx * self.Izz - self.Ixz * self.Ixz
+
         # Aerodynamic Coefficients (Longitudinal)
         # Non-dimensional
         self.CL0 = 0.3

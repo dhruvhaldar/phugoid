@@ -288,10 +288,11 @@ def equations_of_motion(t, state, aircraft, control):
     # [ Ixx  -Ixz ] [ p_dot ] = [ L - term1 ]
     # [ -Ixz  Izz ] [ r_dot ] = [ N - term3 ]
 
-    # Optimization: Use explicit multiplication instead of **2 for performance
-    det = Ixx * Izz - Ixz*Ixz
-    pdot = (Izz * (L_moment - term1) + Ixz * (N_moment - term3)) / det
-    rdot = (Ixz * (L_moment - term1) + Ixx * (N_moment - term3)) / det
+    # Optimization: Use precalculated inertia determinant and precalculate its inverse
+    # replacing explicit multiplication/subtraction inside the hot loop.
+    inv_det = 1.0 / aircraft.Ixx_Izz_det
+    pdot = (Izz * (L_moment - term1) + Ixz * (N_moment - term3)) * inv_det
+    rdot = (Ixz * (L_moment - term1) + Ixx * (N_moment - term3)) * inv_det
 
     # Kinematics (Euler Angles rates)
     # [phi_dot]   [ 1  sin(phi)tan(theta)  cos(phi)tan(theta) ] [ p ]
