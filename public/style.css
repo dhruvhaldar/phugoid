@@ -77,7 +77,7 @@ section h2 {
     margin: -30px -30px 20px -30px;
     /* Stretch to edges */
     padding: 20px 30px;
-    color: #fff;
+    color: var(--text-color);
 }
 
 /* Accessibility */
