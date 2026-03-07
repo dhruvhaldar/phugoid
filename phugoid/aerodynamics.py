@@ -18,6 +18,12 @@ class Aircraft:
         # Pre-calculated inertia determinant for equations_of_motion
         self.Ixx_Izz_det = self.Ixx * self.Izz - self.Ixz * self.Ixz
 
+        # Optimization: Pre-calculate inverses to replace runtime division
+        # with explicit multiplication in hot loops (equations_of_motion)
+        self.inv_mass = 1.0 / self.mass
+        self.inv_Iyy = 1.0 / self.Iyy
+        self.inv_Ixx_Izz_det = 1.0 / self.Ixx_Izz_det
+
         # Aerodynamic Coefficients (Longitudinal)
         # Non-dimensional
         self.CL0 = 0.3
