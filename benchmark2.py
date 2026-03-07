@@ -1,6 +1,6 @@
 import time
 from phugoid.trim import TrimSolver
-from phugoid.aircraft import Cessna172
+from phugoid.aerodynamics import Cessna172
 
 aircraft = Cessna172()
 solver = TrimSolver(aircraft)
