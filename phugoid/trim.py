@@ -59,9 +59,9 @@ class TrimSolver:
         using a custom Newton-Raphson solver to avoid SciPy dependency.
         """
         def objective(x):
-            alpha = float(x[0])
-            elevator = float(x[1])
-            throttle = float(x[2])
+            alpha = x[0]
+            elevator = x[1]
+            throttle = x[2]
 
             theta = alpha + flight_path_angle
             u = velocity * math.cos(alpha)
@@ -95,11 +95,14 @@ class TrimSolver:
             f_plus2 = objective(x)
             x[2] = old_val
 
+            # Optimization: Unpack f0 to avoid repeated index lookups
+            f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
+
             # Construct row-major J for numpy solve
             J = [
-                [(f_plus0[0] - f0[0]) * inv_eps, (f_plus1[0] - f0[0]) * inv_eps, (f_plus2[0] - f0[0]) * inv_eps],
-                [(f_plus0[1] - f0[1]) * inv_eps, (f_plus1[1] - f0[1]) * inv_eps, (f_plus2[1] - f0[1]) * inv_eps],
-                [(f_plus0[2] - f0[2]) * inv_eps, (f_plus1[2] - f0[2]) * inv_eps, (f_plus2[2] - f0[2]) * inv_eps]
+                [(f_plus0[0] - f0_0) * inv_eps, (f_plus1[0] - f0_0) * inv_eps, (f_plus2[0] - f0_0) * inv_eps],
+                [(f_plus0[1] - f0_1) * inv_eps, (f_plus1[1] - f0_1) * inv_eps, (f_plus2[1] - f0_1) * inv_eps],
+                [(f_plus0[2] - f0_2) * inv_eps, (f_plus1[2] - f0_2) * inv_eps, (f_plus2[2] - f0_2) * inv_eps]
             ]
 
             return J
@@ -113,7 +116,9 @@ class TrimSolver:
         for i in range(max_iter):
             f0 = objective(x)
             # Optimization: Use explicit multiplication instead of **2 for performance
-            error = math.sqrt(f0[0]*f0[0] + f0[1]*f0[1] + f0[2]*f0[2])
+            # Unpack to avoid multiple list lookups
+            f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
+            error = math.sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
             
             if error < tol:
                 success = True
@@ -122,7 +127,7 @@ class TrimSolver:
             J = jacobian(x, f0)
             try:
                 # Solve J * dx = -f0
-                dx = solve_3x3(J, [-f0[0], -f0[1], -f0[2]])
+                dx = solve_3x3(J, [-f0_0, -f0_1, -f0_2])
                 # Damping factor to prevent divergence
                 x[0] += 0.5 * dx[0]
                 x[1] += 0.5 * dx[1]
@@ -140,7 +145,8 @@ class TrimSolver:
             for i in range(max_iter):
                 f0 = objective(x)
                 # Optimization: Use explicit multiplication instead of **2 for performance
-                error = math.sqrt(f0[0]*f0[0] + f0[1]*f0[1] + f0[2]*f0[2])
+                f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
+                error = math.sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
                 
                 if error < tol:
                     success = True
@@ -148,7 +154,7 @@ class TrimSolver:
                     
                 J = jacobian(x, f0)
                 try:
-                    dx = solve_3x3(J, [-f0[0], -f0[1], -f0[2]])
+                    dx = solve_3x3(J, [-f0_0, -f0_1, -f0_2])
                     x[0] += 0.5 * dx[0]
                     x[1] += 0.5 * dx[1]
                     x[2] += 0.5 * dx[2]

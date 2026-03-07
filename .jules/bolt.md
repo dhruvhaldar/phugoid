@@ -73,3 +73,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-03-30 - [Pre-calculating Inverses of Constants in Hot Loops]
 **Learning:** In tight mathematical loops like `equations_of_motion`, dynamically calculating invariants (like the inertia determinant `det = Ixx * Izz - Ixz*Ixz`) and then performing division (`1 / det`) adds measurable overhead.
 **Action:** Identify domain invariants (like mass or inertia derivations) and pre-calculate them during class instantiation (`Aircraft.__init__`). Furthermore, store the *inverse* of the value to replace runtime division with explicit multiplication, which is significantly faster.
+
+## 2026-03-07 - [Avoiding Zip Overhead in List Comprehensions]
+**Learning:** In Python, using `zip` inside a list comprehension like `[(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]` carries a small but measurable overhead compared to an explicit index-based list comprehension `[(f_plus[j] - f_nominal[j]) * inv_step for j in range(len)]` because of the iterator instantiation and tuple unpacking.
+**Action:** In hot loops like `compute_jacobian` where the size of the list is fixed and small (e.g. 12 states), prefer index-based list comprehensions for matrix column assignments.

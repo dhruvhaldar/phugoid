@@ -61,8 +61,8 @@ class Linearizer:
 
             # Fill column i of A
             # Forward difference: (f(x+h) - f(x)) * inv_step
-            col = [(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]
-            A[:, i] = col
+            # Optimization: Avoid zip object creation by using explicit index-based list comprehension
+            A[:, i] = [(f_plus[j] - f_nominal[j]) * inv_step for j in range(n_state)]
 
         B = np.zeros((n_state, n_control))
 
@@ -77,8 +77,8 @@ class Linearizer:
             # Revert perturbation
             u_trim_list[i] = old_val
 
-            col = [(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]
-            B[:, i] = col
+            # Optimization: Avoid zip object creation by using explicit index-based list comprehension
+            B[:, i] = [(f_plus[j] - f_nominal[j]) * inv_step for j in range(n_state)]
 
         return A, B
 
