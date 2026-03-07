@@ -121,20 +121,20 @@ class AircraftParameters(BaseModel):
     c: float = Field(1.47, gt=0, description="Mean Aerodynamic Chord in m (must be positive)", allow_inf_nan=False)
 
     # Stability Derivatives
-    CL_alpha: float = Field(4.58, allow_inf_nan=False)
-    Cm_alpha: float = Field(-0.9, allow_inf_nan=False)
-    Cm_q: float = Field(-12.4, allow_inf_nan=False)
-    Cm_de: float = Field(-1.28, allow_inf_nan=False)
+    CL_alpha: float = Field(4.58, ge=-1000.0, le=1000.0, allow_inf_nan=False)
+    Cm_alpha: float = Field(-0.9, ge=-1000.0, le=1000.0, allow_inf_nan=False)
+    Cm_q: float = Field(-12.4, ge=-1000.0, le=1000.0, allow_inf_nan=False)
+    Cm_de: float = Field(-1.28, ge=-1000.0, le=1000.0, allow_inf_nan=False)
 
     # Other coefficients can be added here
-    CL0: float = Field(0.3, allow_inf_nan=False)
-    CD0: float = Field(0.03, allow_inf_nan=False)
-    Cm0: float = Field(-0.02, allow_inf_nan=False)
+    CL0: float = Field(0.3, ge=-1000.0, le=1000.0, allow_inf_nan=False)
+    CD0: float = Field(0.03, ge=-1000.0, le=1000.0, allow_inf_nan=False)
+    Cm0: float = Field(-0.02, ge=-1000.0, le=1000.0, allow_inf_nan=False)
 
 class TrimRequest(BaseModel):
     velocity: float = Field(..., gt=0, le=1000, description="Velocity in m/s (must be positive, max 1000)", allow_inf_nan=False)
     altitude: float = Field(..., ge=-500, le=50000, description="Altitude in meters", allow_inf_nan=False)
-    flight_path_angle: float = Field(0.0, allow_inf_nan=False)
+    flight_path_angle: float = Field(0.0, ge=-90.0, le=90.0, allow_inf_nan=False)
     aircraft: Optional[AircraftParameters] = None
 
 class TrimResponse(BaseModel):

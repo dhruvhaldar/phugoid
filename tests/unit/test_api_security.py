@@ -25,6 +25,18 @@ def test_trim_validation_error_value():
     # Pydantic validation error for gt=0
     assert data["detail"][0]["msg"] == "Input should be greater than 0"
 
+def test_trim_flight_path_angle_bounds():
+    # Test with a flight path angle that is out of bounds
+    response = client.post("/api/trim", json={"velocity": 100, "altitude": 1000, "flight_path_angle": 100})
+    assert response.status_code == 422
+    data = response.json()
+    assert "Input should be less than or equal to 90" in data["detail"][0]["msg"]
+
+    response = client.post("/api/trim", json={"velocity": 100, "altitude": 1000, "flight_path_angle": -100})
+    assert response.status_code == 422
+    data = response.json()
+    assert "Input should be greater than or equal to -90" in data["detail"][0]["msg"]
+
 def test_trim_convergence_failure_handling():
     # Test with inputs that might cause convergence failure
     # If unhandled, it might return 500 or leak stack trace.
