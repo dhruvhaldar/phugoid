@@ -260,9 +260,11 @@ def equations_of_motion(t, state, aircraft, control):
 
     # Linear Acceleration
     # m(u_dot + qw - rv) = Fx
-    udot = Fx_total/m - (q*w - r*v)
-    vdot = Fy_total/m - (r*u - p*w)
-    wdot = Fz_total/m - (p*v - q*u)
+    # Optimization: Use precalculated inverse mass to avoid division
+    inv_m = aircraft.inv_mass
+    udot = Fx_total * inv_m - (q*w - r*v)
+    vdot = Fy_total * inv_m - (r*u - p*w)
+    wdot = Fz_total * inv_m - (p*v - q*u)
 
     # Angular Acceleration
     # I * omega_dot + omega x (I * omega) = Moments
@@ -282,15 +284,16 @@ def equations_of_motion(t, state, aircraft, control):
     term3 = (Iyy - Ixx) * p * q + Ixz * q * r
 
     # q_dot is decoupled if Ixy=Iyz=0
-    qdot = (M_moment - term2) / Iyy
+    # Optimization: Use precalculated inverse Iyy to avoid division
+    qdot = (M_moment - term2) * aircraft.inv_Iyy
 
     # p_dot and r_dot are coupled via Ixz
     # [ Ixx  -Ixz ] [ p_dot ] = [ L - term1 ]
     # [ -Ixz  Izz ] [ r_dot ] = [ N - term3 ]
 
-    # Optimization: Use precalculated inertia determinant and precalculate its inverse
+    # Optimization: Use precalculated inverse inertia determinant
     # replacing explicit multiplication/subtraction inside the hot loop.
-    inv_det = 1.0 / aircraft.Ixx_Izz_det
+    inv_det = aircraft.inv_Ixx_Izz_det
     pdot = (Izz * (L_moment - term1) + Ixz * (N_moment - term3)) * inv_det
     rdot = (Ixz * (L_moment - term1) + Ixx * (N_moment - term3)) * inv_det
 
@@ -470,13 +473,14 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
 
     # Accelerations
     # udot = Fx/m - qw
-    udot = (Fx + Gx)/m - q*w
+    inv_m = aircraft.inv_mass
+    udot = (Fx + Gx) * inv_m - q*w
 
     # wdot = Fz/m + qu
-    wdot = (Fz + Gz)/m + q*u
+    wdot = (Fz + Gz) * inv_m + q*u
 
     # qdot = M/Iyy
-    qdot = M_moment / Iyy
+    qdot = M_moment * aircraft.inv_Iyy
 
     # Kinematics
     # theta_dot = q (since phi=0)
