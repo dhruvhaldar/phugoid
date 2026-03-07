@@ -21,3 +21,7 @@
 ## 2026-03-05 - [Select-on-Focus for Numerical Inputs]
 **Learning:** In technical applications, users rarely want to edit a single digit of an existing number (e.g., changing 51.44 to 51.45). They usually want to overwrite the entire value with a new one. The default browser behavior of placing the cursor at the end or start of the input makes this cumbersome, requiring manual selection or multiple backspaces.
 **Action:** Implement a `focus` event listener on `input[type="number"]` to automatically call `.select()`. This micro-interaction significantly reduces friction for data entry in engineering/technical forms.
+
+## 2026-03-07 - [Color Contrast with High-Luminance Accents]
+**Learning:** In the frontend design system, high-luminance accent colors (like `--accent-blue`) can inadvertently fail accessibility color contrast ratios if paired with white text (`#fff`), especially in bold UI elements like section headers.
+**Action:** When applying bright background accents in the Neubrutalism theme, always use dark text (e.g., `var(--text-color)`) instead of white to ensure readability and compliance with WCAG contrast guidelines.
