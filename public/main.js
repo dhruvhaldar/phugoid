@@ -194,7 +194,11 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         lonList.innerHTML = '';
         analyzeData.longitudinal.forEach(m => {
             const li = document.createElement('li');
-            li.textContent = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)}`;
+            const isStable = m.real <= 0;
+            const statusText = isStable ? 'Stable' : 'Unstable';
+            const color = isStable ? 'var(--accent-green)' : 'var(--accent-red)';
+            const textColor = isStable ? 'var(--text-color)' : '#fff';
+            li.innerHTML = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)} <strong style="background-color: ${color}; color: ${textColor}; padding: 2px 5px; margin-left: 5px; border: 1px solid var(--border-color); font-size: 0.9em;">${statusText}</strong>`;
             lonList.appendChild(li);
         });
 
@@ -202,7 +206,11 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         latList.innerHTML = '';
         analyzeData.lateral.forEach(m => {
             const li = document.createElement('li');
-            li.textContent = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)}`;
+            const isStable = m.real <= 0;
+            const statusText = isStable ? 'Stable' : 'Unstable';
+            const color = isStable ? 'var(--accent-green)' : 'var(--accent-red)';
+            const textColor = isStable ? 'var(--text-color)' : '#fff';
+            li.innerHTML = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)} <strong style="background-color: ${color}; color: ${textColor}; padding: 2px 5px; margin-left: 5px; border: 1px solid var(--border-color); font-size: 0.9em;">${statusText}</strong>`;
             latList.appendChild(li);
         });
 
