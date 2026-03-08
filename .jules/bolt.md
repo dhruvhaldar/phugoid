@@ -77,3 +77,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-03-07 - [Avoiding Zip Overhead in List Comprehensions]
 **Learning:** In Python, using `zip` inside a list comprehension like `[(fp - fm) * inv_step for fp, fm in zip(f_plus, f_nominal)]` carries a small but measurable overhead compared to an explicit index-based list comprehension `[(f_plus[j] - f_nominal[j]) * inv_step for j in range(len)]` because of the iterator instantiation and tuple unpacking.
 **Action:** In hot loops like `compute_jacobian` where the size of the list is fixed and small (e.g. 12 states), prefer index-based list comprehensions for matrix column assignments.
+
+## 2026-03-08 - [Avoiding List Allocations in Hot Objective Loops]
+**Learning:** In the custom Newton-Raphson solver `TrimSolver.find_trim`, creating new `state` and `control` lists inside the `objective(x)` function on every iteration adds unnecessary constant-time overhead. Since these lists are only used synchronously to pass parameters to the physics solver, pre-allocating them outside the objective function and mutating them in place yields measurable performance improvements by reducing allocations.
+**Action:** Identify tight iterative loops (like numerical solver objective functions) that instantiate temporary lists or arrays, and refactor them to mutate pre-allocated objects in the outer scope instead.

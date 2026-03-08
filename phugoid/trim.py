@@ -58,6 +58,11 @@ class TrimSolver:
         Finds the trim state for steady level flight (or steady climb/descent)
         using a custom Newton-Raphson solver to avoid SciPy dependency.
         """
+        # Optimization: Pre-allocate state and control lists outside the hot objective loop
+        # to avoid constant-time instantiation overhead on every function call.
+        state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -altitude]
+        control = [0.0, 0.0, 0.0, 0.0]
+
         def objective(x):
             alpha = x[0]
             elevator = x[1]
@@ -67,9 +72,13 @@ class TrimSolver:
             u = velocity * math.cos(alpha)
             w = velocity * math.sin(alpha)
 
-            # Optimization: pass lists of floats to avoid np.array overhead in tight loops
-            state = [u, 0.0, w, 0.0, 0.0, 0.0, 0.0, theta, 0.0, 0.0, 0.0, -altitude]
-            control = [elevator, 0.0, 0.0, throttle]
+            # Mutate pre-allocated lists instead of creating new ones
+            state[0] = u
+            state[2] = w
+            state[7] = theta
+
+            control[0] = elevator
+            control[3] = throttle
 
             derivs = longitudinal_equations_of_motion(0, state, self.aircraft, control)
             return [derivs[0], derivs[2], derivs[4]]
