@@ -25,3 +25,7 @@
 ## 2026-03-07 - [Color Contrast with High-Luminance Accents]
 **Learning:** In the frontend design system, high-luminance accent colors (like `--accent-blue`) can inadvertently fail accessibility color contrast ratios if paired with white text (`#fff`), especially in bold UI elements like section headers.
 **Action:** When applying bright background accents in the Neubrutalism theme, always use dark text (e.g., `var(--text-color)`) instead of white to ensure readability and compliance with WCAG contrast guidelines.
+
+## 2026-03-08 - [Semantic Stability Badges for Numerical Data]
+**Learning:** In technical domains, users often have to parse raw numerical data (like eigenvalues) to understand the state of a system (e.g., negative real part means stable). Providing semantic visual indicators (like "Stable" / "Unstable" badges with appropriate color coding) alongside the raw data significantly reduces cognitive friction and improves readability.
+**Action:** When displaying complex numerical outputs that map to clear qualitative states, augment the UI with semantic badges to provide immediate context without hiding the underlying data.
