@@ -158,7 +158,8 @@ def equations_of_motion(t, state, aircraft, control):
         V_sq = u*u + v*v + w*w
         V = _sqrt(V_sq)
     else:
-        V_sq = u**2 + v**2 + w**2
+        # Optimization: Use explicit multiplication instead of **2 for numpy arrays to avoid exponentiation overhead
+        V_sq = u*u + v*v + w*w
         V = sqrt(V_sq)
 
     # Avoid division by zero
