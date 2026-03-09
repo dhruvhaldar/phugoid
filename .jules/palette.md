@@ -29,3 +29,7 @@
 ## 2026-03-08 - [Semantic Stability Badges for Numerical Data]
 **Learning:** In technical domains, users often have to parse raw numerical data (like eigenvalues) to understand the state of a system (e.g., negative real part means stable). Providing semantic visual indicators (like "Stable" / "Unstable" badges with appropriate color coding) alongside the raw data significantly reduces cognitive friction and improves readability.
 **Action:** When displaying complex numerical outputs that map to clear qualitative states, augment the UI with semantic badges to provide immediate context without hiding the underlying data.
+
+## 2026-03-10 - [Actionable Empty States]
+**Learning:** Empty states that only provide textual instructions ("Adjust conditions and click calculate") can leave first-time users unsure of what a successful interaction looks like. Adding a one-click "Quick Start" or "Example Analysis" Call-To-Action (CTA) directly within the empty state significantly reduces friction, demonstrating the tool's capabilities immediately.
+**Action:** Always design empty states to be actionable. Include a CTA that populates default data and executes the primary workflow to guide new users into the core experience with a single click.

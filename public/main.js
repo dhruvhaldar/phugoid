@@ -303,3 +303,19 @@ document.addEventListener('focusin', function(e) {
         setTimeout(() => e.target.select(), 10);
     }
 });
+
+// Quick Start from Empty State
+const quickStartBtn = document.getElementById('quick-start-btn');
+if (quickStartBtn) {
+    quickStartBtn.addEventListener('click', () => {
+        // Trigger the first preset
+        if (presetBtns.length > 0) {
+            presetBtns[0].click();
+        }
+        // Trigger calculation
+        const calculateBtn = document.getElementById('calculate-btn');
+        if (calculateBtn && !calculateBtn.disabled) {
+            calculateBtn.click();
+        }
+    });
+}
