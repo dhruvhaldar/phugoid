@@ -665,6 +665,11 @@ input:invalid ~ .help-text::before {
   background-color: var(--input-focus);
 }
 
+.toggle:focus-visible + .slider {
+  outline: none;
+  box-shadow: inset 4px 4px 0px 0px rgba(0, 0, 0, 0.1), 0 0 0 2px var(--bg-color), 0 0 0 4px var(--text-color);
+}
+
 .toggle:checked + .slider:before {
   transform: translateX(30px);
   background-color: var(--accent-green);
