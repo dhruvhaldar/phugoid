@@ -593,3 +593,79 @@ input:invalid ~ .help-text::before {
 .flash-update {
     animation: flash-update 1s ease-out;
 }
+
+/* Unit Toggle Switch (Uiverse.io by andrew-demchenk0) */
+.unit-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: #fff;
+    padding: 15px;
+    border: var(--border-width) solid var(--border-color);
+    box-shadow: 4px 4px 0px 0px var(--border-color);
+}
+
+.unit-toggle-label {
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.switch {
+  --input-focus: var(--accent-blue);
+  --main-color: var(--border-color);
+  --bg-color: #fff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 54px;
+  height: 24px;
+}
+
+.toggle {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  box-sizing: border-box;
+  border-radius: 0;
+  border: var(--border-width) solid var(--main-color);
+  box-shadow: 2px 2px 0px 0px var(--main-color);
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-color);
+  transition: 0.3s;
+}
+
+.slider:before {
+  box-sizing: border-box;
+  position: absolute;
+  content: "";
+  height: 24px;
+  width: 24px;
+  border: var(--border-width) solid var(--main-color);
+  border-radius: 0;
+  left: -3px;
+  bottom: 3px;
+  background-color: var(--accent-yellow);
+  box-shadow: 0 2px 0 var(--main-color);
+  transition: 0.3s;
+}
+
+.toggle:checked + .slider {
+  background-color: var(--input-focus);
+}
+
+.toggle:checked + .slider:before {
+  transform: translateX(30px);
+  background-color: var(--accent-green);
+}

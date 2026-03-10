@@ -5,18 +5,28 @@ const altitudeInput = document.getElementById('altitude');
 const statusRegion = document.getElementById('status-region');
 const velocityDisplay = document.getElementById('velocity-unit-display');
 const altitudeDisplay = document.getElementById('altitude-unit-display');
+const unitToggle = document.getElementById('unit-toggle');
 
 const updateUnits = () => {
+    const isImperial = unitToggle && unitToggle.checked;
     const v = parseFloat(velocityInput.value);
     if (!isNaN(v) && v > 0) {
-        velocityDisplay.textContent = `(≈ ${Math.round(v * 1.94384)} kts)`;
+        if (isImperial) {
+            velocityDisplay.textContent = `(≈ ${(v / 1.94384).toFixed(1)} m/s)`;
+        } else {
+            velocityDisplay.textContent = `(≈ ${Math.round(v * 1.94384)} kts)`;
+        }
     } else {
         velocityDisplay.textContent = '';
     }
 
     const h = parseFloat(altitudeInput.value);
     if (!isNaN(h)) {
-        altitudeDisplay.textContent = `(≈ ${Math.round(h * 3.28084)} ft)`;
+        if (isImperial) {
+            altitudeDisplay.textContent = `(≈ ${(h / 3.28084).toFixed(0)} m)`;
+        } else {
+            altitudeDisplay.textContent = `(≈ ${Math.round(h * 3.28084)} ft)`;
+        }
     } else {
         altitudeDisplay.textContent = '';
     }
@@ -100,6 +110,34 @@ const markResultsStale = () => {
 velocityInput.addEventListener('input', markResultsStale);
 altitudeInput.addEventListener('input', markResultsStale);
 
+if (unitToggle) {
+    unitToggle.addEventListener('change', () => {
+        const isImperial = unitToggle.checked;
+        const velocityLabel = document.querySelector('label[for="velocity"]');
+        const altitudeLabel = document.querySelector('label[for="altitude"]');
+
+        const v = parseFloat(velocityInput.value);
+        const h = parseFloat(altitudeInput.value);
+
+        if (isImperial) {
+            velocityLabel.childNodes[0].textContent = 'Velocity (kts) ';
+            altitudeLabel.childNodes[0].textContent = 'Altitude (ft) ';
+            
+            if (!isNaN(v)) velocityInput.value = (v * 1.94384).toFixed(1);
+            if (!isNaN(h)) altitudeInput.value = (h * 3.28084).toFixed(0);
+        } else {
+            velocityLabel.childNodes[0].textContent = 'Velocity (m/s) ';
+            altitudeLabel.childNodes[0].textContent = 'Altitude (m) ';
+
+            if (!isNaN(v)) velocityInput.value = (v / 1.94384).toFixed(1);
+            if (!isNaN(h)) altitudeInput.value = (h / 3.28084).toFixed(0);
+        }
+        
+        updateUnits();
+        markResultsStale();
+    });
+}
+
 // Initialize
 updateUnits();
 
@@ -147,8 +185,14 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     inputs.forEach(input => input.disabled = true);
 
     try {
-        const velocity = parseFloat(document.getElementById('velocity').value);
-        const altitude = parseFloat(document.getElementById('altitude').value);
+        let velocity = parseFloat(document.getElementById('velocity').value);
+        let altitude = parseFloat(document.getElementById('altitude').value);
+
+        // Convert to Metric for API if currently in Imperial
+        if (unitToggle && unitToggle.checked) {
+            velocity = velocity / 1.94384;
+            altitude = altitude / 3.28084;
+        }
 
         // Trim
         const trimRes = await fetch('/api/trim', {
@@ -176,7 +220,7 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         const analyzeRes = await fetch('/api/analyze', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({velocity, altitude})
+            body: JSON.stringify({velocity, altitude}) // velocity/altitude are already Metric here
         });
         const analyzeData = await analyzeRes.json();
 
