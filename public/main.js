@@ -119,15 +119,34 @@ if (unitToggle) {
         const v = parseFloat(velocityInput.value);
         const h = parseFloat(altitudeInput.value);
 
+        const velocityHelp = document.getElementById('velocity-help');
+        const altitudeHelp = document.getElementById('altitude-help');
+
         if (isImperial) {
             velocityLabel.childNodes[0].textContent = 'Velocity (kts) ';
             altitudeLabel.childNodes[0].textContent = 'Altitude (ft) ';
             
+            velocityInput.min = (0.1 * 1.94384).toFixed(1);
+            velocityInput.max = (1000 * 1.94384).toFixed(0);
+            if (velocityHelp) velocityHelp.textContent = `Min: ${velocityInput.min} kts, Max: ${velocityInput.max} kts`;
+
+            altitudeInput.min = (-500 * 3.28084).toFixed(0);
+            altitudeInput.max = (50000 * 3.28084).toFixed(0);
+            if (altitudeHelp) altitudeHelp.textContent = `Range: ${altitudeInput.min} to ${altitudeInput.max} ft`;
+
             if (!isNaN(v)) velocityInput.value = (v * 1.94384).toFixed(1);
             if (!isNaN(h)) altitudeInput.value = (h * 3.28084).toFixed(0);
         } else {
             velocityLabel.childNodes[0].textContent = 'Velocity (m/s) ';
             altitudeLabel.childNodes[0].textContent = 'Altitude (m) ';
+
+            velocityInput.min = "0.1";
+            velocityInput.max = "1000";
+            if (velocityHelp) velocityHelp.textContent = 'Min: 0.1 m/s, Max: 1000 m/s';
+
+            altitudeInput.min = "-500";
+            altitudeInput.max = "50000";
+            if (altitudeHelp) altitudeHelp.textContent = 'Range: -500 to 50,000 m';
 
             if (!isNaN(v)) velocityInput.value = (v / 1.94384).toFixed(1);
             if (!isNaN(h)) altitudeInput.value = (h / 3.28084).toFixed(0);
