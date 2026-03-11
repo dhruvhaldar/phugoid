@@ -1,0 +1,3 @@
+## 2024-03-11 - Unit Toggles and HTML5 Validation Constraints
+**Learning:** When dynamically changing input units (e.g., metric to imperial) via toggles, updating the value is not enough. The HTML5 validation attributes (`min`, `max`) and any associated helper text must also be updated simultaneously. Otherwise, the browser's native `:invalid` pseudoclass will incorrectly flag valid converted values as errors because they break the hardcoded default limits (e.g., a max of 1000m/s will incorrectly fail 1943 kts).
+**Action:** Always bind HTML5 form validation attributes (`min`, `max`, `step`) and related visual helper text to the same state/event listener that manages unit conversions or data formatting.
