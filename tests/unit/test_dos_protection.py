@@ -95,6 +95,37 @@ def test_rate_limit_enforcement():
     response = client.get("/api/health", headers=headers)
     assert response.status_code == 429
 
+def test_input_validation_mass_and_geometry_limits():
+    """Verify that extremely large mass and geometry values are rejected to prevent numerical DoS."""
+    payload = {
+        "velocity": 500.0,
+        "altitude": 1000.0,
+        "aircraft": {
+            "mass": 1e300, # Too high
+            "S": 16.2,
+            "b": 11.0,
+            "c": 1.47,
+            "CL_alpha": 4.58,
+            "Cm_alpha": -0.9,
+            "Cm_q": -12.4,
+            "Cm_de": -1.28,
+            "CL0": 0.3,
+            "CD0": 0.03,
+            "Cm0": -0.02
+        }
+    }
+    response = client.post("/api/trim", json=payload)
+    assert response.status_code == 422
+    assert "detail" in response.json()
+    assert any("Input should be less than or equal to 100000" in e["msg"] for e in response.json()["detail"])
+
+    # Test wing area limit
+    payload["aircraft"]["mass"] = 1000.0
+    payload["aircraft"]["S"] = 1e10
+    response = client.post("/api/trim", json=payload)
+    assert response.status_code == 422
+    assert any("Input should be less than or equal to 1000" in e["msg"] for e in response.json()["detail"])
+
 def test_input_validation_velocity_limit():
     """Verify that extremely high velocities are rejected."""
     payload = {

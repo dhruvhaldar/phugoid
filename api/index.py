@@ -115,10 +115,10 @@ app.add_middleware(SecureHeadersMiddleware)
 
 class AircraftParameters(BaseModel):
     # Core Geometry & Mass
-    mass: float = Field(1111.0, gt=0, description="Mass in kg (must be positive)", allow_inf_nan=False)
-    S: float = Field(16.2, gt=0, description="Wing Area in m^2 (must be positive)", allow_inf_nan=False)
-    b: float = Field(11.0, gt=0, description="Wing Span in m (must be positive)", allow_inf_nan=False)
-    c: float = Field(1.47, gt=0, description="Mean Aerodynamic Chord in m (must be positive)", allow_inf_nan=False)
+    mass: float = Field(1111.0, gt=0, le=100000.0, description="Mass in kg (must be positive)", allow_inf_nan=False)
+    S: float = Field(16.2, gt=0, le=1000.0, description="Wing Area in m^2 (must be positive)", allow_inf_nan=False)
+    b: float = Field(11.0, gt=0, le=100.0, description="Wing Span in m (must be positive)", allow_inf_nan=False)
+    c: float = Field(1.47, gt=0, le=50.0, description="Mean Aerodynamic Chord in m (must be positive)", allow_inf_nan=False)
 
     # Stability Derivatives
     CL_alpha: float = Field(4.58, ge=-1000.0, le=1000.0, allow_inf_nan=False)
