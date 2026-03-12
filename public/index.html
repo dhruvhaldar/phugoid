@@ -34,12 +34,12 @@
                         (65kts)</button>
                 </div>
                 <div class="unit-toggle-container">
-                    <span class="unit-toggle-label" aria-hidden="true">Metric</span>
+                    <span class="unit-toggle-label" id="label-metric" tabindex="0" role="button" aria-pressed="true">Metric</span>
                     <label class="switch">
-                        <input type="checkbox" class="toggle" id="unit-toggle" aria-label="Toggle Imperial Units">
+                        <input type="checkbox" class="toggle" id="unit-toggle" role="switch" aria-label="Toggle Imperial Units">
                         <span class="slider"></span>
                     </label>
-                    <span class="unit-toggle-label" aria-hidden="true">Imperial</span>
+                    <span class="unit-toggle-label" id="label-imperial" tabindex="0" role="button" aria-pressed="false">Imperial</span>
                 </div>
                 <div class="input-group">
                     <label for="velocity">Velocity (m/s) <span style="color: var(--accent-red);" aria-hidden="true">*</span> <span id="velocity-unit-display"
