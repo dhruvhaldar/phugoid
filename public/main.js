@@ -111,8 +111,41 @@ velocityInput.addEventListener('input', markResultsStale);
 altitudeInput.addEventListener('input', markResultsStale);
 
 if (unitToggle) {
+    const labelMetric = document.getElementById('label-metric');
+    const labelImperial = document.getElementById('label-imperial');
+
+    const setToggleState = (toImperial) => {
+        if (unitToggle.checked !== toImperial) {
+            unitToggle.checked = toImperial;
+            unitToggle.dispatchEvent(new Event('change'));
+        }
+    };
+
+    if (labelMetric) {
+        labelMetric.addEventListener('click', () => setToggleState(false));
+        labelMetric.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setToggleState(false);
+            }
+        });
+    }
+
+    if (labelImperial) {
+        labelImperial.addEventListener('click', () => setToggleState(true));
+        labelImperial.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setToggleState(true);
+            }
+        });
+    }
+
     unitToggle.addEventListener('change', () => {
         const isImperial = unitToggle.checked;
+        if (labelMetric) labelMetric.setAttribute('aria-pressed', !isImperial);
+        if (labelImperial) labelImperial.setAttribute('aria-pressed', isImperial);
+
         const velocityLabel = document.querySelector('label[for="velocity"]');
         const altitudeLabel = document.querySelector('label[for="altitude"]');
 
