@@ -32,7 +32,7 @@ class Linearizer:
 
         # Optimization: Use pure Python lists instead of np.zeros
         # Avoiding numpy array instantiation inside this tight inner loop provides significant speedup.
-        A = [[0.0] * n_state for _ in range(n_state)]
+        A_cols = [None] * n_state
 
         # Calculate nominal state derivative once (f(x))
         # Reuse this for forward difference calculation to save ~50% of EoM calls
@@ -63,11 +63,10 @@ class Linearizer:
 
             # Fill column i of A
             # Forward difference: (f(x+h) - f(x)) * inv_step
-            # Optimization: Assign directly to python list, avoiding array assignment overhead
-            for j in range(n_state):
-                A[j][i] = (f_plus[j] - f_nominal[j]) * inv_step
+            # Optimization: Use index-based list comprehension for matrix column assignment
+            A_cols[i] = [(f_plus[j] - f_nominal[j]) * inv_step for j in range(n_state)]
 
-        B = [[0.0] * n_control for _ in range(n_state)]
+        B_cols = [None] * n_control
 
         # Compute B matrix (df/du) - perturbation of control
         for i in range(n_control):
@@ -80,11 +79,14 @@ class Linearizer:
             # Revert perturbation
             u_trim_list[i] = old_val
 
-            # Optimization: Assign directly to python list, avoiding array assignment overhead
-            for j in range(n_state):
-                B[j][i] = (f_plus[j] - f_nominal[j]) * inv_step
+            # Optimization: Use index-based list comprehension for matrix column assignment
+            B_cols[i] = [(f_plus[j] - f_nominal[j]) * inv_step for j in range(n_state)]
 
-        return np.array(A), np.array(B)
+        # Deal with uninitialized columns in A (indices 9, 10 which are skipped)
+        for i in [9, 10]:
+            A_cols[i] = [0.0] * n_state
+
+        return np.array(A_cols).T, np.array(B_cols).T
 
     def get_longitudinal_matrices(self):
         # Extract indices for u, w, q, theta
