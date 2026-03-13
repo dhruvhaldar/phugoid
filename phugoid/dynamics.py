@@ -10,7 +10,6 @@ _cos = math.cos
 _atan2 = math.atan2
 _sqrt = math.sqrt
 _asin = math.asin
-_pow = math.pow
 
 @lru_cache(maxsize=128)
 def _cached_trig(phi, theta, psi):
@@ -146,7 +145,8 @@ def equations_of_motion(t, state, aircraft, control):
 
         T = T0 - L_lapse * h_clamped
         base_atm = 1.0 - BASE_FACTOR * h_clamped
-        P = P0 * _pow(base_atm, EXPONENT)
+        # Optimization: Use ** instead of math.pow for scalar power calculations
+        P = P0 * (base_atm ** EXPONENT)
         rho = P / (R_gas * T)
     else:
         T, P, rho = atmosphere(-z)
@@ -414,7 +414,8 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
 
     T = T0 - L_lapse * h_clamped
     base_atm = 1.0 - BASE_FACTOR * h_clamped
-    P = P0 * _pow(base_atm, EXPONENT)
+    # Optimization: Use ** instead of math.pow for scalar power calculations
+    P = P0 * (base_atm ** EXPONENT)
     rho = P / (R_gas * T)
 
     # Airspeed

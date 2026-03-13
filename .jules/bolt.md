@@ -85,3 +85,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-04-01 - [Avoiding Exponentiation on NumPy Arrays]
 **Learning:** In Python, applying the power operator (`**2`) to NumPy arrays incurs a small but cumulative performance penalty compared to explicit element-wise multiplication (`array * array`). While this optimization is well-known for pure Python floats, benchmarks demonstrate that `a * a` is approximately 5-10% faster than `a ** 2` for NumPy arrays inside mathematical loops due to the overhead of the generalized power function dispatch.
 **Action:** When computing sums of squares or explicit powers in hot mathematical loops (like computing `V_sq = u*u + v*v + w*w` in `equations_of_motion`), explicitly multiply the NumPy arrays instead of using the `**2` operator.
+
+## 2024-05-28 - [Optimizing Python Exponentiation]
+**Learning:** In Python, the built-in exponentiation operator `**` carries lower overhead compared to `math.pow()` for floating-point calculations when the base is a variable and the exponent is a literal float. Replacing `math.pow()` with `**` removes the function call overhead while maintaining the same underlying C math operations.
+**Action:** In core physics loops (like atmosphere models or equations of motion), prefer the explicit exponentiation operator `**` over `math.pow()` for floating-point calculations to maximize performance without sacrificing readability.

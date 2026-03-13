@@ -35,7 +35,8 @@ def atmosphere_scalar(altitude_val):
     # Optimized power calculation
     # P = P0 * (1 - L * h_clamped / T0) ** (g / (R * L))
     base = 1.0 - BASE_FACTOR * h_clamped
-    P = P0 * math.pow(base, EXPONENT)
+    # Optimization: Use ** instead of math.pow for scalar power calculations
+    P = P0 * (base ** EXPONENT)
 
     rho = P / (R * T)
     return float(T), float(P), float(rho)
