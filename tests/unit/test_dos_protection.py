@@ -175,3 +175,14 @@ def test_request_size_limit():
     response = client.post("/api/trim", json=payload, headers=headers)
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid Content-Length"
+
+def test_chunked_bypass_with_content_length():
+    """Verify that providing BOTH Content-Length and Transfer-Encoding: chunked
+    still results in rejection, rather than bypassing the chunked check."""
+    request_counts.clear()
+    headers = {
+        "Content-Length": "100",
+        "Transfer-Encoding": "chunked"
+    }
+    response = client.post("/api/trim", headers=headers)
+    assert response.status_code == 411, f"Expected 411 Length Required, got {response.status_code}. Middleware bypass detected!"
