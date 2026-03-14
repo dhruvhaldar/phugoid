@@ -255,7 +255,11 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         const trimData = await trimRes.json();
 
         if (trimData.detail) {
-            throw new Error(trimData.detail);
+            let msg = trimData.detail;
+            if (Array.isArray(msg)) {
+                msg = msg.map(e => `${e.loc[e.loc.length - 1]}: ${e.msg}`).join(', ');
+            }
+            throw new Error(msg);
         }
 
         document.getElementById('trim-alpha').textContent = trimData.alpha_deg.toFixed(2);
@@ -277,7 +281,11 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         const analyzeData = await analyzeRes.json();
 
         if (analyzeData.detail) {
-            throw new Error(analyzeData.detail);
+            let msg = analyzeData.detail;
+            if (Array.isArray(msg)) {
+                msg = msg.map(e => `${e.loc[e.loc.length - 1]}: ${e.msg}`).join(', ');
+            }
+            throw new Error(msg);
         }
 
         // Plot Poles
