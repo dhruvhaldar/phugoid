@@ -391,6 +391,16 @@ input:invalid {
     background-color: var(--accent-green);
 }
 
+.icon-btn[aria-disabled="true"] {
+    opacity: 0.5;
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+}
+
+.icon-btn[aria-disabled="true"] svg {
+    pointer-events: none;
+}
+
 /* Fancy Footer (Neubrutalism) */
 .site-footer {
     background-color: var(--accent-yellow);
