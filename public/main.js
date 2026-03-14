@@ -74,6 +74,13 @@ presetBtns.forEach(btn => {
         if (statusRegion) {
             statusRegion.textContent = `Preset ${btn.textContent} selected. Results outdated.`;
         }
+
+        const copyBtn = document.getElementById('copy-trim-btn');
+        if (copyBtn) {
+            copyBtn.setAttribute('aria-disabled', 'true');
+            copyBtn.setAttribute('aria-label', 'Results outdated - Recalculate');
+            copyBtn.setAttribute('title', 'Results outdated - Recalculate');
+        }
     });
 });
 
@@ -103,6 +110,13 @@ const markResultsStale = () => {
         // Announce to screen readers
         if (statusRegion) {
             statusRegion.textContent = 'Inputs changed. Results are outdated.';
+        }
+
+        const copyBtn = document.getElementById('copy-trim-btn');
+        if (copyBtn) {
+            copyBtn.setAttribute('aria-disabled', 'true');
+            copyBtn.setAttribute('aria-label', 'Results outdated - Recalculate');
+            copyBtn.setAttribute('title', 'Results outdated - Recalculate');
         }
     }
 };
@@ -336,6 +350,14 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         // UX: Trigger resize to ensure charts render correctly in now-visible containers
         window.dispatchEvent(new Event('resize'));
 
+        // UX: Restore copy button state
+        const copyBtn = document.getElementById('copy-trim-btn');
+        if (copyBtn) {
+            copyBtn.removeAttribute('aria-disabled');
+            copyBtn.setAttribute('aria-label', 'Copy trim results to clipboard');
+            copyBtn.setAttribute('title', 'Copy to clipboard');
+        }
+
         // Announce success to screen readers
         document.getElementById('status-region').textContent = 'Calculation complete. Results updated.';
     } catch (err) {
@@ -356,7 +378,12 @@ const copyBtn = document.getElementById('copy-trim-btn');
 if (copyBtn) {
     const originalHtml = copyBtn.innerHTML;
 
-    copyBtn.addEventListener('click', async () => {
+    copyBtn.addEventListener('click', async (e) => {
+        if (copyBtn.getAttribute('aria-disabled') === 'true') {
+            e.preventDefault();
+            return;
+        }
+
         const alpha = document.getElementById('trim-alpha').textContent;
         const elevator = document.getElementById('trim-elevator').textContent;
         const throttle = document.getElementById('trim-throttle').textContent;
