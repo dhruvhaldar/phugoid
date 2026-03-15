@@ -57,3 +57,8 @@
 **Vulnerability:** The `RequestSizeLimitMiddleware` checked `Content-Length` before `Transfer-Encoding: chunked`. By sending both headers (with a small, valid `Content-Length`), an attacker could bypass the chunked check entirely. The server would read the message as chunked, allowing unbounded payloads and causing resource exhaustion (DoS).
 **Learning:** In HTTP/1.1, `Transfer-Encoding: chunked` overrides `Content-Length` (RFC 7230). Middleware MUST check `Transfer-Encoding` independently and preferably first to prevent smuggling bypasses.
 **Prevention:** Modified `RequestSizeLimitMiddleware` to check for `chunked` in `Transfer-Encoding` first and immediately reject it, before parsing or considering `Content-Length`. Added a test to verify requests containing both headers are still rejected.
+
+## 2026-11-05 - Missing Cross-Origin Resource Sharing (CORS) Policy
+**Vulnerability:** The FastAPI application lacked an explicitly defined CORS policy, leading to default browser restrictions that block external web applications from invoking the API, or potentially allowing overly permissive default behavior depending on the framework's fallback.
+**Learning:** Public or semi-public API endpoints require an explicit `CORSMiddleware` configuration to explicitly declare allowed origins, methods, and headers, preventing unauthorized cross-origin access and mitigating potential CSRF/XSS exploitation vectors if authentication were added.
+**Prevention:** Added `CORSMiddleware` explicitly configured to allow local frontend origins (`allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"]`), ensuring maximum compatibility while maintaining strict control over allowed HTTP methods and headers.
