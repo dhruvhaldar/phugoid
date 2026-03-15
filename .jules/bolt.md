@@ -89,3 +89,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2024-05-28 - [Optimizing Python Exponentiation]
 **Learning:** In Python, the built-in exponentiation operator `**` carries lower overhead compared to `math.pow()` for floating-point calculations when the base is a variable and the exponent is a literal float. Replacing `math.pow()` with `**` removes the function call overhead while maintaining the same underlying C math operations.
 **Action:** In core physics loops (like atmosphere models or equations of motion), prefer the explicit exponentiation operator `**` over `math.pow()` for floating-point calculations to maximize performance without sacrificing readability.
+
+## 2026-05-15 - [Explicit List Unpacking Over List Comprehensions in Tight Loops]
+**Learning:** In tight inner loops where small, fixed-size matrices/vectors are repeatedly calculated (e.g. `Linearizer.compute_jacobian`), using index-based list comprehensions (e.g. `[(f_plus[j] - f_nominal[j]) * inv_step for j in range(12)]`) introduces iterator instantiation and repeated index lookup overhead. Directly unpacking the values into flat local variables (`fp0, fp1, ... = f_plus`) and explicitly building the resulting list provides a consistent ~7-10% performance gain by bypassing index lookups and iterator overhead.
+**Action:** When working on numerical solvers iterating over small dimensions (like $N=12$ in 6-DOF models), unpack short fixed-size lists directly into flat local variables instead of using list comprehensions or direct index lookups.

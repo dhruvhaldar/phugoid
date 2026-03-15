@@ -41,6 +41,10 @@ class Linearizer:
         # Optimization: Pre-calculate inverse step to replace division with multiplication
         inv_step = 1.0 / step
 
+        # Optimization: Unpack f_nominal into flat local variables to eliminate
+        # repeated list index lookups inside the hot inner loops.
+        f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11 = f_nominal
+
         # Compute A matrix (df/dx) - perturbation of state
         for i in range(n_state):
             # Optimization: Skip horizontal position states (x=9, y=10)
@@ -63,8 +67,16 @@ class Linearizer:
 
             # Fill column i of A
             # Forward difference: (f(x+h) - f(x)) * inv_step
-            # Optimization: Use index-based list comprehension for matrix column assignment
-            A_cols[i] = [(f_plus[j] - f_nominal[j]) * inv_step for j in range(n_state)]
+            # Optimization: Unpack f_plus into flat local variables to eliminate
+            # repeated list index lookups and iterator overhead from list comprehensions.
+            fp0, fp1, fp2, fp3, fp4, fp5, fp6, fp7, fp8, fp9, fp10, fp11 = f_plus
+
+            A_cols[i] = [
+                (fp0 - f0) * inv_step, (fp1 - f1) * inv_step, (fp2 - f2) * inv_step,
+                (fp3 - f3) * inv_step, (fp4 - f4) * inv_step, (fp5 - f5) * inv_step,
+                (fp6 - f6) * inv_step, (fp7 - f7) * inv_step, (fp8 - f8) * inv_step,
+                (fp9 - f9) * inv_step, (fp10 - f10) * inv_step, (fp11 - f11) * inv_step
+            ]
 
         B_cols = [None] * n_control
 
@@ -79,8 +91,16 @@ class Linearizer:
             # Revert perturbation
             u_trim_list[i] = old_val
 
-            # Optimization: Use index-based list comprehension for matrix column assignment
-            B_cols[i] = [(f_plus[j] - f_nominal[j]) * inv_step for j in range(n_state)]
+            # Optimization: Unpack f_plus into flat local variables to eliminate
+            # repeated list index lookups and iterator overhead from list comprehensions.
+            fp0, fp1, fp2, fp3, fp4, fp5, fp6, fp7, fp8, fp9, fp10, fp11 = f_plus
+
+            B_cols[i] = [
+                (fp0 - f0) * inv_step, (fp1 - f1) * inv_step, (fp2 - f2) * inv_step,
+                (fp3 - f3) * inv_step, (fp4 - f4) * inv_step, (fp5 - f5) * inv_step,
+                (fp6 - f6) * inv_step, (fp7 - f7) * inv_step, (fp8 - f8) * inv_step,
+                (fp9 - f9) * inv_step, (fp10 - f10) * inv_step, (fp11 - f11) * inv_step
+            ]
 
         # Deal with uninitialized columns in A (indices 9, 10 which are skipped)
         for i in [9, 10]:
