@@ -435,6 +435,13 @@ document.addEventListener('focusin', function(e) {
     }
 });
 
+// UX Improvement: Prevent accidental value changes when scrolling over focused number inputs
+document.addEventListener('wheel', function() {
+    if (document.activeElement && document.activeElement.type === 'number') {
+        document.activeElement.blur();
+    }
+});
+
 // Quick Start from Empty State
 const quickStartBtn = document.getElementById('quick-start-btn');
 if (quickStartBtn) {

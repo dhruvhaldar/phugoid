@@ -9,3 +9,7 @@
 ## 2024-03-13 - Explaining Disabled States
 **Learning:** Using the native `disabled` attribute on buttons removes them from the tab order and prevents mouse interactions, meaning any attached tooltips (`title`) or `aria-label` updates explaining *why* the button is disabled will be completely invisible to both keyboard and mouse users.
 **Action:** When a button's disabled state requires explanation (like a "Copy" button being disabled because the data is stale), visually disable it using CSS (`.btn[aria-disabled="true"]` with `opacity: 0.5`, `cursor: not-allowed`, and `pointer-events: none` on children) and handle the disabled logic in JavaScript. This preserves focusability and hover states so the user can read the updated tooltip.
+
+## 2024-03-14 - Accidental Number Input Scrolling
+**Learning:** Native `<input type="number">` elements capture mouse wheel events when hovered/focused. In a form-heavy UI where users frequently scroll the page, this often leads to accidental, unnoticed value changes, especially on numeric parameters that dictate physical simulations.
+**Action:** Attach a `wheel` event listener to the document that calls `blur()` on the `activeElement` if it is a number input. This relinquishes focus, allowing the page to scroll smoothly and preventing accidental value changes, while preserving intentional typing and arrow-key interactions.
