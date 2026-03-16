@@ -105,3 +105,9 @@ def test_chunked_transfer_encoding_rejection():
     response = client.post("/api/trim", headers={"Transfer-Encoding": "chunked"})
     assert response.status_code == 411
     assert response.json() == {"detail": "Length Required"}
+
+
+def test_cors_headers():
+    response = client.options("/api/health", headers={"Origin": "http://localhost:8000", "Access-Control-Request-Method": "GET"})
+    assert response.status_code == 200
+    assert "access-control-allow-origin" in response.headers
