@@ -362,29 +362,16 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     # sqrt = math.sqrt
 
     # Unpack state (u, w, q, theta, z are relevant)
-    # state is expected to be a list/tuple or numpy array.
-    # TrimSolver passes a list.
-    if isinstance(state, (list, tuple)):
-        u = state[0]
-        w = state[2]
-        q = state[4]
-        theta = state[7]
-        z = state[11]
-    else:
-        # Numpy array (fallback)
-        u = state[0]
-        w = state[2]
-        q = state[4]
-        theta = state[7]
-        z = state[11]
+    # Optimization: Direct index access is faster than sequence unpacking for numpy arrays and avoids unused variables.
+    u = state[0]
+    w = state[2]
+    q = state[4]
+    theta = state[7]
+    z = state[11]
 
     # Unpack control (delta_e, throttle)
-    if isinstance(control, (list, tuple)):
-        delta_e = control[0]
-        throttle = control[3]
-    else:
-        delta_e = control[0]
-        throttle = control[3]
+    delta_e = control[0]
+    throttle = control[3]
 
     # Constants
     g = 9.80665
