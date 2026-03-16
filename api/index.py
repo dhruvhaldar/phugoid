@@ -203,6 +203,10 @@ def calculate_trim(req: TrimRequest):
         # Expected runtime errors like convergence failure
         print(f"Trim Runtime Error: {e}")
         raise HTTPException(status_code=422, detail="Calculation failed to converge. Please check your inputs.")
+    except ValueError as e:
+        # Handle ValueError, e.g. for invalid arguments to math functions internally
+        print(f"Trim Value Error: {e}")
+        raise HTTPException(status_code=400, detail="Invalid mathematical operation during calculation.")
     except Exception as e:
         # Unexpected errors
         print(f"Internal Error in /api/trim: {e}")
@@ -240,6 +244,9 @@ def analyze_stability(req: AnalysisRequest):
     except RuntimeError as e:
         print(f"Analysis Runtime Error: {e}")
         raise HTTPException(status_code=422, detail="Calculation failed to converge. Please check your inputs.")
+    except ValueError as e:
+        print(f"Analysis Value Error: {e}")
+        raise HTTPException(status_code=400, detail="Invalid mathematical operation during analysis.")
     except Exception as e:
         print(f"Internal Error in /api/analyze: {e}")
         raise HTTPException(status_code=500, detail="An internal error occurred.")
