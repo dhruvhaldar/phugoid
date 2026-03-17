@@ -111,3 +111,11 @@ def test_cors_headers():
     response = client.options("/api/health", headers={"Origin": "http://localhost:8000", "Access-Control-Request-Method": "GET"})
     assert response.status_code == 200
     assert "access-control-allow-origin" in response.headers
+
+def test_cors_headers_on_error_responses():
+    request_counts.clear()
+    for _ in range(100):
+        client.get("/api/health")
+    response = client.get("/api/health", headers={"Origin": "http://localhost:8000"})
+    assert response.status_code == 429
+    assert "access-control-allow-origin" in response.headers
