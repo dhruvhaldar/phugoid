@@ -65,6 +65,8 @@ def test_security_headers():
     assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
     assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
     assert response.headers["Permissions-Policy"] == "geolocation=(), microphone=(), camera=()"
+    assert response.headers["Cross-Origin-Opener-Policy"] == "same-origin"
+    assert response.headers["Cross-Origin-Resource-Policy"] == "same-origin"
 
     assert "Content-Security-Policy" in response.headers
     csp = response.headers["Content-Security-Policy"]
