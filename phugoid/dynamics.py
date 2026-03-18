@@ -43,53 +43,54 @@ def equations_of_motion(t, state, aircraft, control):
     """
 
     # Performance optimization: use math module for scalars (10x faster than numpy ufuncs)
-    # Check for list/tuple first to avoid slow np.ndim(list)
-    is_list = isinstance(state, (list, tuple))
-    was_list = is_list # Keep track of original input type for return value
+    # Optimization: Avoid full sequence unpacking and redundant isinstance checks.
+    # Duck typing and direct indexing is faster and avoids NumPy scalar instantiation overhead.
+    try:
+        u = state[0]
+        v = state[1]
+        w = state[2]
+        p = state[3]
+        q = state[4]
+        r = state[5]
+        phi = state[6]
+        theta = state[7]
+        psi = state[8]
+        # x = state[9]  # Unused
+        # y = state[10] # Unused
+        z = state[11]
 
-    if is_list:
+        delta_e = control[0]
+        delta_a = control[1]
+        delta_r = control[2]
+        throttle = control[3]
+
+        was_list = isinstance(state, (list, tuple))
+        if type(u) is not float and type(u) is not int:
+            u = float(u)
+            v = float(v)
+            w = float(w)
+            p = float(p)
+            q = float(q)
+            r = float(r)
+            phi = float(phi)
+            theta = float(theta)
+            psi = float(psi)
+            z = float(z)
+
+            delta_e = float(delta_e)
+            delta_a = float(delta_a)
+            delta_r = float(delta_r)
+            throttle = float(throttle)
+
         is_scalar = True
-        # Unpack state
-        # Optimization: Direct unpacking is significantly faster than slice unpacking (4x for lists, 2x for numpy arrays)
-        u, v, w, p, q, r, phi, theta, psi, x, y, z = state # z is positive down (altitude = -z)
-    elif np.ndim(state) == 1:
-        is_scalar = True
-        # Optimization: Ensure inputs are native floats to avoid numpy scalar overhead
-        # This speeds up math operations by ~45-60% on scalar paths
-
-        # Convert numpy array to list of floats (fast)
-        # Doing this immediately avoids the overhead of unpacking numpy scalars first
-        state = state.tolist()
-        if not isinstance(control, (list, tuple)):
-            control = control.tolist()
-        is_list = True
-
-        # Unpack state variables
-        u, v, w, p, q, r, phi, theta, psi, x, y, z = state
-    else:
+        s_ph, c_ph, s_th, c_th, s_ps, c_ps = _cached_trig(phi, theta, psi)
+    except (TypeError, IndexError, AttributeError, ValueError):
+        # Fallback to the slow vector path for multidimensional arrays or unsupported types
         is_scalar = False
-        # Vectorized path: Unpack directly
+        was_list = False
         u, v, w, p, q, r, phi, theta, psi, x, y, z = state
+        delta_e, delta_a, delta_r, throttle = control
 
-    if is_scalar:
-        # Check heuristic for numpy scalars (which are slow for math module)
-        # We check the first element (u) as a proxy for the whole state vector
-        u_val = state[0]
-        if type(u_val) is not float and type(u_val) is not int:
-            state = [float(x) for x in state]
-            # Re-unpack state variables to use native floats
-            u, v, w, p, q, r, phi, theta, psi, x, y, z = state
-
-        # Check control vector as well (elevator usually)
-        de_val = control[0]
-        if type(de_val) is not float and type(de_val) is not int:
-            control = [float(x) for x in control]
-
-        # Use cached trig for scalar path to speed up Jacobian estimation
-        s_ph, c_ph, s_th, c_th, s_ps, c_ps = _cached_trig(float(phi), float(theta), float(psi))
-
-        # Aliases are now module-level (_sin, _cos, etc.)
-    else:
         sin = np.sin
         cos = np.cos
         atan2 = np.arctan2
@@ -103,9 +104,6 @@ def equations_of_motion(t, state, aircraft, control):
         s_ph = sin(phi)
         c_ps = cos(psi)
         s_ps = sin(psi)
-
-    # Unpack control
-    delta_e, delta_a, delta_r, throttle = control
 
     # Constants
     g = 9.80665
@@ -363,15 +361,28 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
 
     # Unpack state (u, w, q, theta, z are relevant)
     # Optimization: Direct index access is faster than sequence unpacking for numpy arrays and avoids unused variables.
-    u = state[0]
-    w = state[2]
-    q = state[4]
-    theta = state[7]
-    z = state[11]
+    # We remove redundant `isinstance` type checks to rely on duck typing for a safe performance boost.
+    try:
+        u = state[0]
+        w = state[2]
+        q = state[4]
+        theta = state[7]
+        z = state[11]
 
-    # Unpack control (delta_e, throttle)
-    delta_e = control[0]
-    throttle = control[3]
+        delta_e = control[0]
+        throttle = control[3]
+
+        if type(u) is not float and type(u) is not int:
+            u = float(u)
+            w = float(w)
+            q = float(q)
+            theta = float(theta)
+            z = float(z)
+
+            delta_e = float(delta_e)
+            throttle = float(throttle)
+    except (TypeError, ValueError, IndexError, AttributeError):
+        pass
 
     # Constants
     g = 9.80665
