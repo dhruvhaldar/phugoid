@@ -282,10 +282,15 @@ button.loading {
     padding-left: 50px;
 }
 
-input:disabled, .preset-btn:disabled {
+input:disabled, .preset-btn:disabled,
+button[aria-disabled="true"], input[aria-disabled="true"], .preset-btn[aria-disabled="true"] {
     opacity: 0.6;
     cursor: not-allowed;
     background-color: #e0e0e0;
+}
+
+button[aria-disabled="true"] * {
+    pointer-events: none;
 }
 
 button.loading::after {
