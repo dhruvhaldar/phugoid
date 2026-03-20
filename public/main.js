@@ -226,7 +226,7 @@ document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         const btn = document.getElementById('calculate-btn');
         // Only trigger if button exists and is not disabled (e.g. not loading)
-        if (btn && !btn.disabled) {
+        if (btn && btn.getAttribute('aria-disabled') !== 'true' && !btn.disabled) {
             btn.click();
         }
     }
@@ -235,6 +235,7 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('flight-controls').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('calculate-btn');
+    if (btn && btn.getAttribute('aria-disabled') === 'true') return;
     const errorDiv = document.getElementById('error-message');
     const originalText = btn.innerHTML;
 
@@ -242,7 +243,8 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     errorDiv.textContent = '';
     document.getElementById('status-region').textContent = '';
     btn.classList.add('loading');
-    btn.disabled = true;
+    btn.setAttribute('aria-disabled', 'true');
+    btn.setAttribute('title', 'Calculation in progress, please wait');
     btn.setAttribute('aria-busy', 'true');
     btn.innerHTML = 'Calculating...';
 
@@ -364,7 +366,8 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         errorDiv.textContent = err.message || 'An unexpected error occurred';
     } finally {
         btn.classList.remove('loading');
-        btn.disabled = false;
+        btn.removeAttribute('aria-disabled');
+        btn.removeAttribute('title');
         btn.removeAttribute('aria-busy');
         btn.innerHTML = originalText;
 
@@ -452,7 +455,7 @@ if (quickStartBtn) {
         }
         // Trigger calculation
         const calculateBtn = document.getElementById('calculate-btn');
-        if (calculateBtn && !calculateBtn.disabled) {
+        if (calculateBtn && calculateBtn.getAttribute('aria-disabled') !== 'true' && !calculateBtn.disabled) {
             calculateBtn.click();
         }
     });
