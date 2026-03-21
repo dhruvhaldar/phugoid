@@ -2,6 +2,8 @@ import numpy as np
 import math
 from functools import lru_cache
 
+_pow = math.pow
+
 # Constants
 T0 = 288.15     # Sea level temperature [K]
 P0 = 101325.0   # Sea level pressure [Pa]
@@ -35,8 +37,8 @@ def atmosphere_scalar(altitude_val):
     # Optimized power calculation
     # P = P0 * (1 - L * h_clamped / T0) ** (g / (R * L))
     base = 1.0 - BASE_FACTOR * h_clamped
-    # Optimization: Use ** instead of math.pow for scalar power calculations
-    P = P0 * (base ** EXPONENT)
+    # Optimization: Use math.pow instead of ** for scalar power calculations
+    P = P0 * _pow(base, EXPONENT)
 
     rho = P / (R * T)
     return float(T), float(P), float(rho)
@@ -72,7 +74,7 @@ def atmosphere(altitude):
         # P = P0 * (1 - L * h_clamped / T0) ** (g / (R * L))
         # Vectorized optimization
         base = 1.0 - BASE_FACTOR * h_clamped
-        P = P0 * (base ** EXPONENT)
+        P = P0 * (base ** EXPONENT) # keep ** for numpy arrays
 
         rho = P / (R * T)
 
