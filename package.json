@@ -1,0 +1,29 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "[![Build Status](https://github.com/dhruvhaldar/phugoid/actions/workflows/dynamics_check.yml/badge.svg)](https://github.com/dhruvhaldar/phugoid/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Vercel](https://img.shields.io/badge/Vercel-Deploy-black)](https://vercel.com/) [![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/downloads/) [![PyPI](https://img.shields.io/badge/PyPI-1.0.0-blue)](https://pypi.org/project/phugoid/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-blue)](https://fastapi.tiangolo.com/) [![Uvicorn](https://img.shields.io/badge/Uvicorn-0.100+-blue)](https://www.uvicorn.org/)",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhruvhaldar/phugoid.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dhruvhaldar/phugoid/issues"
+  },
+  "homepage": "https://github.com/dhruvhaldar/phugoid#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}
