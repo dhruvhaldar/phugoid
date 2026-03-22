@@ -12,6 +12,8 @@
 
 The tool provides a complete pipeline for analyzing aircraft stability: from defining aerodynamic coefficients and finding the **Trim State** (Equilibrium), to linearizing the equations of motion and visualizing the resulting **Eigenmodes** (dynamic stability).
 
+![Phugoid Flight Dynamics Workbench Screenshot](public/screenshot.png)
+
 ## 📚 Syllabus Mapping (SD2805)
 
 This project strictly adheres to the course learning outcomes:
