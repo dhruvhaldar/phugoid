@@ -247,9 +247,11 @@ def equations_of_motion(t, state, aircraft, control):
     Fz = Fz_aero
 
     # Gravity in Body Frame
-    Gx = -m * g * s_th
-    Gy = m * g * c_th * s_ph
-    Gz = m * g * c_th * c_ph
+    # Optimization: Pre-calculate m * g to avoid redundant multiplications
+    mg = m * g
+    Gx = -mg * s_th
+    Gy = mg * c_th * s_ph
+    Gz = mg * c_th * c_ph
 
     # Total Forces
     Fx_total = Fx + Gx
@@ -457,7 +459,9 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     Fz_aero = q_bar_S * (-CD * s_alpha - CL * c_alpha)
 
     # Pitching Moment
-    M_moment = q_bar_S * c * Cm
+    # Optimization: Pre-calculate q_bar_S * c to avoid redundant multiplications
+    q_bar_S_c = q_bar_S * c
+    M_moment = q_bar_S_c * Cm
 
     # Thrust
     Thrust = throttle * 2000.0 * (rho / 1.225)
@@ -469,8 +473,10 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     s_th = _sin(theta)
     c_th = _cos(theta)
 
-    Gx = -m * g * s_th
-    Gz = m * g * c_th
+    # Optimization: Pre-calculate m * g to avoid redundant multiplications
+    mg = m * g
+    Gx = -mg * s_th
+    Gz = mg * c_th
 
     # Accelerations
     # udot = Fx/m - qw

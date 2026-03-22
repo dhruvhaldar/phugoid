@@ -109,3 +109,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-06-12 - [Optimizing Python Exponentiation for Floats]
 **Learning:** In Python, the built-in exponentiation operator `**` carries significant overhead compared to `math.pow()` for non-integer powers. `math.pow(base, exp)` is roughly 40% faster than `base ** exp` for floating-point calculations, including when the exponent is a variable float (e.g., `EXPONENT = 5.2558797`).
 **Action:** In core physics loops (like atmosphere models or equations of motion), use `math.pow()` instead of `**` when calculating powers with float exponents, ensuring to alias the function (e.g., `_pow = math.pow`) at the module level for maximum performance. Keep `**` for NumPy arrays.
+
+## 2026-06-12 - [Optimizing Repetitive Constants in Hot Loops]
+**Learning:** In tight mathematical loops (like `equations_of_motion`), calculating and storing repetitive products in local variables at the top of the function (e.g., `mg = m * g` and `q_bar_S_c = q_bar_S * c`) is preferred over object property lookups (like pre-computing `self.weight`) to minimize access overhead and avoid redundant floating-point operations. It's also safer because caching derived state (like `weight = mass * g`) on an object can lead to regressions if the base property (`mass`) is modified after initialization.
+**Action:** Extract repeated mathematical products into local variables instead of computing them inline repeatedly or caching them on the object state if they depend on mutuable properties.
