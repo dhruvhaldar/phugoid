@@ -35,3 +35,7 @@
 ## 2026-03-10 - Custom Checkbox Input Accessibility
 **Learning:** Custom UI toggle switches (often implemented as a hidden `input[type="checkbox"]` with adjacent styled `span` elements) inherently lose browser-default focus indicators. Furthermore, visually adjacent text (`span`s) does not automatically serve as an accessible name for screen readers, unlike a properly associated `label`.
 **Action:** Always add explicit `:focus-visible` styles to the visual target (e.g., `.toggle:focus-visible + .slider`) when hiding the native input. Additionally, ensure the input has an explicit `aria-label` and consider hiding visually adjacent pseudo-labels with `aria-hidden="true"` to prevent confusing, redundant screen reader announcements.
+
+## 2026-03-23 - State Desync on Custom Toggle Switches
+**Learning:** During long-running async operations (like API calls), naturally disabling native inputs (`input:disabled`) is insufficient if custom UI controls (like pseudo-labels acting as toggle switches) remain interactive. This leads to state desynchronization mid-calculation.
+**Action:** Always manually manage the disabled state (`aria-disabled`) and apply corresponding JavaScript interaction guards (e.g., early returns on click/keydown) for all non-native custom interactive elements when forms are submitted.
