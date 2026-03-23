@@ -283,7 +283,8 @@ button.loading {
 }
 
 input:disabled, .preset-btn:disabled,
-button[aria-disabled="true"], input[aria-disabled="true"], .preset-btn[aria-disabled="true"] {
+button[aria-disabled="true"], input[aria-disabled="true"], .preset-btn[aria-disabled="true"],
+.unit-toggle-label[aria-disabled="true"], .toggle:disabled + .slider {
     opacity: 0.6;
     cursor: not-allowed;
     background-color: #e0e0e0;

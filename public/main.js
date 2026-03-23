@@ -136,8 +136,12 @@ if (unitToggle) {
     };
 
     if (labelMetric) {
-        labelMetric.addEventListener('click', () => setToggleState(false));
+        labelMetric.addEventListener('click', () => {
+            if (labelMetric.getAttribute('aria-disabled') === 'true') return;
+            setToggleState(false);
+        });
         labelMetric.addEventListener('keydown', (e) => {
+            if (labelMetric.getAttribute('aria-disabled') === 'true') return;
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 setToggleState(false);
@@ -146,8 +150,12 @@ if (unitToggle) {
     }
 
     if (labelImperial) {
-        labelImperial.addEventListener('click', () => setToggleState(true));
+        labelImperial.addEventListener('click', () => {
+            if (labelImperial.getAttribute('aria-disabled') === 'true') return;
+            setToggleState(true);
+        });
         labelImperial.addEventListener('keydown', (e) => {
+            if (labelImperial.getAttribute('aria-disabled') === 'true') return;
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 setToggleState(true);
@@ -251,6 +259,10 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     // Disable inputs and preset buttons during calculation
     const inputs = document.querySelectorAll('#flight-controls input, .preset-btn');
     inputs.forEach(input => input.disabled = true);
+
+    // Disable unit toggle pseudo-labels
+    const unitLabels = document.querySelectorAll('.unit-toggle-label');
+    unitLabels.forEach(label => label.setAttribute('aria-disabled', 'true'));
 
     try {
         let velocity = parseFloat(document.getElementById('velocity').value);
@@ -373,6 +385,9 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
 
         // Re-enable inputs
         inputs.forEach(input => input.disabled = false);
+
+        // Re-enable unit toggle pseudo-labels
+        unitLabels.forEach(label => label.removeAttribute('aria-disabled'));
     }
 });
 
