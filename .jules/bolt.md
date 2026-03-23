@@ -113,3 +113,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-06-12 - [Optimizing Repetitive Constants in Hot Loops]
 **Learning:** In tight mathematical loops (like `equations_of_motion`), calculating and storing repetitive products in local variables at the top of the function (e.g., `mg = m * g` and `q_bar_S_c = q_bar_S * c`) is preferred over object property lookups (like pre-computing `self.weight`) to minimize access overhead and avoid redundant floating-point operations. It's also safer because caching derived state (like `weight = mass * g`) on an object can lead to regressions if the base property (`mass`) is modified after initialization.
 **Action:** Extract repeated mathematical products into local variables instead of computing them inline repeatedly or caching them on the object state if they depend on mutuable properties.
+
+## 2026-06-12 - [Avoiding lru_cache for Fast C-level Operations]
+**Learning:** Using functools.lru_cache for fast C-level operations like math.sin or math.cos on floating-point arguments is an anti-pattern unless the cache hit rate is exceptionally high. In continuous systems (like ODE solvers), changing states lead to continuous cache misses where tuple creation, hashing, and dict lookup overhead is significantly worse than direct module-level aliases.
+**Action:** Remove @lru_cache on fast C-level operations and replace with direct inline calls using module-level aliases.

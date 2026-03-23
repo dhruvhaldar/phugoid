@@ -12,16 +12,7 @@ _sqrt = math.sqrt
 _asin = math.asin
 _pow = math.pow
 
-@lru_cache(maxsize=128)
-def _cached_trig(phi, theta, psi):
-    """
-    Cached trigonometric calculations for Euler angles.
-    Reduces redundant math.sin/cos calls when orientation is constant
-    (e.g. during Jacobian estimation of non-angular states).
-    """
-    return (math.sin(phi), math.cos(phi),
-            math.sin(theta), math.cos(theta),
-            math.sin(psi), math.cos(psi))
+
 
 def equations_of_motion(t, state, aircraft, control):
     """
@@ -84,7 +75,7 @@ def equations_of_motion(t, state, aircraft, control):
             throttle = float(throttle)
 
         is_scalar = True
-        s_ph, c_ph, s_th, c_th, s_ps, c_ps = _cached_trig(phi, theta, psi)
+        s_ph, c_ph, s_th, c_th, s_ps, c_ps = _sin(phi), _cos(phi), _sin(theta), _cos(theta), _sin(psi), _cos(psi)
     except (TypeError, IndexError, AttributeError, ValueError):
         # Fallback to the slow vector path for multidimensional arrays or unsupported types
         is_scalar = False
