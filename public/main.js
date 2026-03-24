@@ -254,7 +254,8 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     btn.setAttribute('aria-disabled', 'true');
     btn.setAttribute('title', 'Calculation in progress, please wait');
     btn.setAttribute('aria-busy', 'true');
-    btn.innerHTML = 'Calculating...';
+    const shortcut = btn.querySelector('.kbd-shortcut');
+    btn.innerHTML = 'Calculating... ' + (shortcut ? shortcut.outerHTML : '');
 
     // Disable inputs and preset buttons during calculation
     const inputs = document.querySelectorAll('#flight-controls input, .preset-btn');
