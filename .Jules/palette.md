@@ -43,3 +43,7 @@
 ## 2026-11-24 - External Link Predictability
 **Learning:** Text links that open in a new tab (`target="_blank"`) without visual or screen reader indication cause user disorientation, as assistive technology users unexpectedly find their back button disabled.
 **Action:** Always append visually hidden screen reader text like "(opens in a new tab)" and a visual indicator (like an arrow icon `↗`) to external links to set clear expectations before interaction.
+
+## 2026-11-25 - Input Focus Indicators
+**Learning:** Removing default browser outlines without replacing them with a high-contrast alternative causes severe accessibility issues for keyboard users, especially on low-contrast backgrounds.
+**Action:** Always provide a strong, high-contrast focus indicator (e.g., a double ring using background and text colors) for text inputs when hiding the native outline.
