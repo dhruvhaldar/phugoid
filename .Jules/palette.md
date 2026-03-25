@@ -39,3 +39,7 @@
 ## 2026-03-23 - State Desync on Custom Toggle Switches
 **Learning:** During long-running async operations (like API calls), naturally disabling native inputs (`input:disabled`) is insufficient if custom UI controls (like pseudo-labels acting as toggle switches) remain interactive. This leads to state desynchronization mid-calculation.
 **Action:** Always manually manage the disabled state (`aria-disabled`) and apply corresponding JavaScript interaction guards (e.g., early returns on click/keydown) for all non-native custom interactive elements when forms are submitted.
+
+## 2026-11-24 - External Link Predictability
+**Learning:** Text links that open in a new tab (`target="_blank"`) without visual or screen reader indication cause user disorientation, as assistive technology users unexpectedly find their back button disabled.
+**Action:** Always append visually hidden screen reader text like "(opens in a new tab)" and a visual indicator (like an arrow icon `↗`) to external links to set clear expectations before interaction.
