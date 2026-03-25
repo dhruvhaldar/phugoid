@@ -157,9 +157,13 @@ def equations_of_motion(t, state, aircraft, control):
         if V < 0.1:
             V = 0.1
             V_sq = 0.01
+            inv_V = 10.0
+        else:
+            inv_V = 1.0 / V
     else:
         V = np.maximum(V, 0.1)
         V_sq = np.maximum(V_sq, 0.01)
+        inv_V = 1.0 / V
 
     # Aerodynamic Angles
     if is_scalar:
@@ -172,7 +176,7 @@ def equations_of_motion(t, state, aircraft, control):
         c_alpha = cos(alpha)
 
     # Optimized beta calculation
-    arg_beta = v / V
+    arg_beta = v * inv_V
 
     if is_scalar:
         if arg_beta < -1.0: arg_beta = -1.0
@@ -186,7 +190,7 @@ def equations_of_motion(t, state, aircraft, control):
     q_bar_S = q_bar * S
     q_bar_S_b = q_bar_S * b
     q_bar_S_c = q_bar_S * c
-    inv_2V = 0.5 / V
+    inv_2V = 0.5 * inv_V
 
     # Pre-calculate normalized rates to reduce redundant multiplications in coefficient calculations
     q_norm = q * c * inv_2V

@@ -43,6 +43,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-02-17 - [Avoiding NumPy Array Construction in Tight Numerical Solver Loops]
 **Learning:** Inside numerical solvers like a Newton-Raphson scheme in `TrimSolver`, constructing and returning intermediate `numpy.ndarray` vectors (like state vectors and derivative arrays) on every iteration carries significant constant-time instantiation overhead. This overhead adds up when solving small state dimensions ($N=3$). Returning raw Python `list`s out of the objective function and explicitly assigning elements into Jacobian matrix columns bypasses this instantiation overhead.
 **Action:** For $N \le 3$ inner loops of a numerical solver, return and pass around Python `list` objects instead of `np.array` across boundaries when vectorization gains are outweighed by instantiation costs. Cast back to `np.array` *only* before calling `np.linalg.solve`.
+
 ## 2026-02-28 - [Optimizing Body-to-NED Position Rate Translations]
 **Learning:** The calculation of NED position rates (`x_dot`, `y_dot`, `z_dot`) in `equations_of_motion` involves a large sequence of multiplications computing the full 3D rotation matrix natively. Translating velocities by undoing Roll, Pitch, and Yaw via chained 2D-like transformations successively reduces the math operations from 15 multiplications / 6 additions to 9 multiplications / 4 additions, yielding an isolated ~35% performance uplift without changing output values.
 **Action:** When rotating vectors across 3D coordinate frames inside hot paths, prefer applying chained sequential single-axis transformations mathematically over building/multiplying through fully unrolled multi-axis 3x3 rotation matrices.
@@ -58,6 +59,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-03-25 - [Optimizing Python Exponentiation]
 **Learning:** In Python, the built-in exponentiation operator `**` carries significant overhead compared to `math.pow()` for non-integer powers, likely due to additional checks and dynamic type handling. Benchmarks show `math.pow(base, exp)` is roughly 40% faster than `base ** exp` for floating-point calculations.
 **Action:** In core physics loops (like atmosphere models or equations of motion), use `math.pow()` instead of `**` when calculating powers with float exponents, ensuring to alias the function (e.g., `_pow = math.pow`) at the module level for maximum performance.
+
 ## 2026-03-04 - [Avoiding Redundant Jacobian Calculations in Custom Solvers]
 **Learning:** In custom Newton-Raphson solvers (like `TrimSolver`), evaluating the base objective function (`f0`) inside the Jacobian calculation function means that the Jacobian and its expensive finite difference perturbations (e.g., `f_plus0`, `f_plus1`) will be evaluated even on the final, converged iteration where the error is below tolerance and the loop will immediately break.
 **Action:** Extract the base objective function evaluation (`f0`) to the main solver loop, evaluate convergence, and only pass `f0` into the Jacobian function if a new iteration is actually required. This skips the final unnecessary Jacobian calculation, saving multiple objective function calls.
@@ -117,3 +119,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2026-06-12 - [Avoiding lru_cache for Fast C-level Operations]
 **Learning:** Using functools.lru_cache for fast C-level operations like math.sin or math.cos on floating-point arguments is an anti-pattern unless the cache hit rate is exceptionally high. In continuous systems (like ODE solvers), changing states lead to continuous cache misses where tuple creation, hashing, and dict lookup overhead is significantly worse than direct module-level aliases.
 **Action:** Remove @lru_cache on fast C-level operations and replace with direct inline calls using module-level aliases.
+
+## 2024-05-30 - [Pre-calculating Inverses to Avoid Division in Hot Loops]
+**Learning:** In physics loops (like `equations_of_motion`), calculating terms like `v / V` or `0.5 / V` adds division overhead, especially since the denominator `V` is constant for multiple lines.
+**Action:** Compute the inverse `inv_V = 1.0 / V` once, and replace subsequent divisions by `V` with multiplications by `inv_V`. This reduces calculation overhead slightly.
