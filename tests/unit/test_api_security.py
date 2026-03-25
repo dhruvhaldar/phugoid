@@ -121,3 +121,29 @@ def test_cors_headers_on_error_responses():
     response = client.get("/api/health", headers={"Origin": "http://localhost:8000"})
     assert response.status_code == 429
     assert "access-control-allow-origin" in response.headers
+
+def test_input_validation_forbids_extra_fields():
+    request_counts.clear()
+    payload = {
+        "velocity": 100.0,
+        "altitude": 1000.0,
+        "extra_field": "should be rejected"
+    }
+    response = client.post("/api/trim", json=payload)
+    assert response.status_code == 422
+    assert "detail" in response.json()
+    assert response.json()["detail"][0]["type"] == "extra_forbidden"
+
+def test_aircraft_parameters_forbids_extra_fields():
+    request_counts.clear()
+    payload = {
+        "velocity": 100.0,
+        "altitude": 1000.0,
+        "aircraft": {
+            "mass": 1000,
+            "extra_param": "should fail"
+        }
+    }
+    response = client.post("/api/trim", json=payload)
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["type"] == "extra_forbidden"

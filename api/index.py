@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import time
 from collections import defaultdict
@@ -132,6 +132,7 @@ app.add_middleware(
 )
 
 class AircraftParameters(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     # Core Geometry & Mass
     mass: float = Field(1111.0, gt=0, le=100000.0, description="Mass in kg (must be positive)", allow_inf_nan=False)
     S: float = Field(16.2, gt=0, le=1000.0, description="Wing Area in m^2 (must be positive)", allow_inf_nan=False)
@@ -150,6 +151,7 @@ class AircraftParameters(BaseModel):
     Cm0: float = Field(-0.02, ge=-1000.0, le=1000.0, allow_inf_nan=False)
 
 class TrimRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     velocity: float = Field(..., gt=0, le=1000, description="Velocity in m/s (must be positive, max 1000)", allow_inf_nan=False)
     altitude: float = Field(..., ge=-500, le=50000, description="Altitude in meters", allow_inf_nan=False)
     flight_path_angle: float = Field(0.0, ge=-90.0, le=90.0, allow_inf_nan=False)
@@ -164,6 +166,7 @@ class TrimResponse(BaseModel):
     w: float
 
 class AnalysisRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     velocity: float = Field(..., gt=0, le=1000, description="Velocity in m/s (must be positive, max 1000)", allow_inf_nan=False)
     altitude: float = Field(..., ge=-500, le=50000, description="Altitude in meters", allow_inf_nan=False)
     aircraft: Optional[AircraftParameters] = None
