@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import time
+import hashlib
 from collections import defaultdict
 import numpy as np
 import os
@@ -50,11 +51,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         else:
             client_ip = request.client.host if request.client else "unknown"
 
+        # Hash the client IP to prevent storing PII in memory
+        client_ip_hash = hashlib.sha256(client_ip.encode("utf-8")).hexdigest()
+
         now = time.time()
         # Clean up old timestamps (older than 60s)
         # Handle LRU: Remove from dict to re-insert at end if exists
-        if client_ip in request_counts:
-            timestamps = request_counts.pop(client_ip)
+        if client_ip_hash in request_counts:
+            timestamps = request_counts.pop(client_ip_hash)
         else:
             timestamps = []
 
@@ -64,11 +68,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Check limit (100 requests per minute)
         if len(timestamps) >= 100:
             # Re-insert before returning
-            request_counts[client_ip] = timestamps
+            request_counts[client_ip_hash] = timestamps
             return JSONResponse(status_code=429, content={"detail": "Too many requests. Please try again later."})
 
         timestamps.append(now)
-        request_counts[client_ip] = timestamps
+        request_counts[client_ip_hash] = timestamps
 
         # Basic cleanup to prevent memory exhaustion from IP spoofing
         # Evict oldest entries (LRU) instead of clearing all
