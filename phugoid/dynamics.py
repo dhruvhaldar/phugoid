@@ -135,8 +135,9 @@ def equations_of_motion(t, state, aircraft, control):
 
         T = T0 - L_lapse * h_clamped
         base_atm = 1.0 - BASE_FACTOR * h_clamped
-        # Optimization: Use math.pow instead of ** for scalar power calculations
-        P = P0 * _pow(base_atm, EXPONENT)
+        # Optimization: Use ** instead of math.pow for scalar floating-point exponentiation
+        # as benchmarking shows it has lower overhead in this specific context.
+        P = P0 * (base_atm ** EXPONENT)
         rho = P / (R_gas * T)
     else:
         T, P, rho = atmosphere(-z)
@@ -410,8 +411,9 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
 
     T = T0 - L_lapse * h_clamped
     base_atm = 1.0 - BASE_FACTOR * h_clamped
-    # Optimization: Use math.pow instead of ** for scalar power calculations
-    P = P0 * _pow(base_atm, EXPONENT)
+    # Optimization: Use ** instead of math.pow for scalar floating-point exponentiation
+    # as benchmarking shows it has lower overhead in this specific context.
+    P = P0 * (base_atm ** EXPONENT)
     rho = P / (R_gas * T)
 
     # Airspeed
