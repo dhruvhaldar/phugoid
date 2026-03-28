@@ -2,6 +2,10 @@ import numpy as np
 import math
 from phugoid.dynamics import equations_of_motion, longitudinal_equations_of_motion
 
+_sin = math.sin
+_cos = math.cos
+_sqrt = math.sqrt
+
 class TrimState:
     def __init__(self, alpha, elevator, throttle, u, w, theta, velocity, altitude):
         self.alpha = alpha
@@ -69,8 +73,8 @@ class TrimSolver:
             throttle = x[2]
 
             theta = alpha + flight_path_angle
-            u = velocity * math.cos(alpha)
-            w = velocity * math.sin(alpha)
+            u = velocity * _cos(alpha)
+            w = velocity * _sin(alpha)
 
             # Mutate pre-allocated lists instead of creating new ones
             state[0] = u
@@ -127,7 +131,7 @@ class TrimSolver:
             # Optimization: Use explicit multiplication instead of **2 for performance
             # Unpack to avoid multiple list lookups
             f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
-            error = math.sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
+            error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
             
             if error < tol:
                 success = True
@@ -155,7 +159,7 @@ class TrimSolver:
                 f0 = objective(x)
                 # Optimization: Use explicit multiplication instead of **2 for performance
                 f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
-                error = math.sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
+                error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
                 
                 if error < tol:
                     success = True
