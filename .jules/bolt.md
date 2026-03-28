@@ -123,3 +123,7 @@ By constructing lists in the solver and avoiding `np.ndim` checks on lists (via 
 ## 2024-05-30 - [Pre-calculating Inverses to Avoid Division in Hot Loops]
 **Learning:** In physics loops (like `equations_of_motion`), calculating terms like `v / V` or `0.5 / V` adds division overhead, especially since the denominator `V` is constant for multiple lines.
 **Action:** Compute the inverse `inv_V = 1.0 / V` once, and replace subsequent divisions by `V` with multiplications by `inv_V`. This reduces calculation overhead slightly.
+
+## 2026-06-12 - [Module-Level Aliasing Anti-Pattern]
+**Learning:** In modern Python (3.11+), creating module-level aliases for standard library functions (e.g., `_sin = math.sin` or `_sqrt = math.sqrt`) to avoid global attribute lookups in hot loops is an anti-pattern. Due to Python's inline caching, the attribute lookup overhead is negligible, and aliasing sacrifices code readability without providing measurable performance gains.
+**Action:** Do not use module-level aliasing for standard library functions (like `math.sin`, `math.cos`, `math.sqrt`) as an optimization strategy. Keep the code readable by using the standard `math.function()` calls.
