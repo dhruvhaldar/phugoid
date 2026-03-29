@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import time
 import hashlib
+import secrets
 from collections import defaultdict
 import numpy as np
 import os
@@ -19,6 +20,9 @@ app = FastAPI()
 
 # Global storage for rate limiting (IP -> list of timestamps)
 request_counts = defaultdict(list)
+
+# Generate a random salt on startup for IP hashing to prevent rainbow table attacks
+IP_HASH_SALT = secrets.token_hex(16)
 
 class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -51,8 +55,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         else:
             client_ip = request.client.host if request.client else "unknown"
 
-        # Hash the client IP to prevent storing PII in memory
-        client_ip_hash = hashlib.sha256(client_ip.encode("utf-8")).hexdigest()
+        # Hash the client IP with a salt to prevent storing PII in memory and thwart rainbow table attacks
+        salted_ip = f"{client_ip}:{IP_HASH_SALT}"
+        client_ip_hash = hashlib.sha256(salted_ip.encode("utf-8")).hexdigest()
 
         now = time.time()
         # Clean up old timestamps (older than 60s)
