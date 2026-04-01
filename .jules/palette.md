@@ -13,3 +13,6 @@
 ## 2024-03-14 - Accidental Number Input Scrolling
 **Learning:** Native `<input type="number">` elements capture mouse wheel events when hovered/focused. In a form-heavy UI where users frequently scroll the page, this often leads to accidental, unnoticed value changes, especially on numeric parameters that dictate physical simulations.
 **Action:** Attach a `wheel` event listener to the document that calls `blur()` on the `activeElement` if it is a number input. This relinquishes focus, allowing the page to scroll smoothly and preventing accidental value changes, while preserving intentional typing and arrow-key interactions.
+## 2024-04-01 - Respecting OS-Level Reduced Motion
+**Learning:** JavaScript-triggered scroll behaviors and animations (e.g., `element.scrollIntoView({ behavior: 'smooth' })`) bypass CSS `@media (prefers-reduced-motion: reduce)` rules.
+**Action:** Always wrap imperative JavaScript animations and smooth scrolling in a `window.matchMedia('(prefers-reduced-motion: reduce)').matches` check to ensure OS accessibility preferences are respected, falling back to instant/auto behavior if true.
