@@ -47,3 +47,7 @@
 ## 2026-11-25 - Input Focus Indicators
 **Learning:** Removing default browser outlines without replacing them with a high-contrast alternative causes severe accessibility issues for keyboard users, especially on low-contrast backgrounds.
 **Action:** Always provide a strong, high-contrast focus indicator (e.g., a double ring using background and text colors) for text inputs when hiding the native outline.
+
+## 2026-11-26 - JavaScript-Triggered Animation and Reduced Motion
+**Learning:** Adding `@media (prefers-reduced-motion: reduce)` to CSS only disables purely CSS-based animations and scroll behaviors. If JavaScript imperatively triggers a behavior like `element.scrollIntoView({ behavior: 'smooth' })`, it bypasses the CSS rule completely, causing unexpected motion for users who explicitly disabled it.
+**Action:** Always wrap imperative JavaScript animations and scroll behaviors in a `window.matchMedia('(prefers-reduced-motion: reduce)').matches` check to conditionally apply smooth transitions only when permitted by the user.
