@@ -74,7 +74,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if len(timestamps) >= 100:
             # Re-insert before returning
             request_counts[client_ip_hash] = timestamps
-            return JSONResponse(status_code=429, content={"detail": "Too many requests. Please try again later."})
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests. Please try again later."},
+                headers={"Retry-After": "60"}
+            )
 
         timestamps.append(now)
         request_counts[client_ip_hash] = timestamps
