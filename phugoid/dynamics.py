@@ -38,41 +38,25 @@ def equations_of_motion(t, state, aircraft, control):
     # Optimization: Avoid full sequence unpacking and redundant isinstance checks.
     # Duck typing and direct indexing is faster and avoids NumPy scalar instantiation overhead.
     try:
-        u = state[0]
-        v = state[1]
-        w = state[2]
-        p = state[3]
-        q = state[4]
-        r = state[5]
-        phi = state[6]
-        theta = state[7]
-        psi = state[8]
+        u = float(state[0])
+        v = float(state[1])
+        w = float(state[2])
+        p = float(state[3])
+        q = float(state[4])
+        r = float(state[5])
+        phi = float(state[6])
+        theta = float(state[7])
+        psi = float(state[8])
         # x = state[9]  # Unused
         # y = state[10] # Unused
-        z = state[11]
+        z = float(state[11])
 
-        delta_e = control[0]
-        delta_a = control[1]
-        delta_r = control[2]
-        throttle = control[3]
+        delta_e = float(control[0])
+        delta_a = float(control[1])
+        delta_r = float(control[2])
+        throttle = float(control[3])
 
         was_list = isinstance(state, (list, tuple))
-        if type(u) is not float and type(u) is not int:
-            u = float(u)
-            v = float(v)
-            w = float(w)
-            p = float(p)
-            q = float(q)
-            r = float(r)
-            phi = float(phi)
-            theta = float(theta)
-            psi = float(psi)
-            z = float(z)
-
-            delta_e = float(delta_e)
-            delta_a = float(delta_a)
-            delta_r = float(delta_r)
-            throttle = float(throttle)
 
         is_scalar = True
         s_ph, c_ph, s_th, c_th, s_ps, c_ps = _sin(phi), _cos(phi), _sin(theta), _cos(theta), _sin(psi), _cos(psi)
@@ -362,24 +346,14 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     # Optimization: Direct index access is faster than sequence unpacking for numpy arrays and avoids unused variables.
     # We remove redundant `isinstance` type checks to rely on duck typing for a safe performance boost.
     try:
-        u = state[0]
-        w = state[2]
-        q = state[4]
-        theta = state[7]
-        z = state[11]
+        u = float(state[0])
+        w = float(state[2])
+        q = float(state[4])
+        theta = float(state[7])
+        z = float(state[11])
 
-        delta_e = control[0]
-        throttle = control[3]
-
-        if type(u) is not float and type(u) is not int:
-            u = float(u)
-            w = float(w)
-            q = float(q)
-            theta = float(theta)
-            z = float(z)
-
-            delta_e = float(delta_e)
-            throttle = float(throttle)
+        delta_e = float(control[0])
+        throttle = float(control[3])
     except (TypeError, ValueError, IndexError, AttributeError):
         pass
 
