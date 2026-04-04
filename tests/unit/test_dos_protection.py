@@ -80,6 +80,7 @@ def test_rate_limit_bypass_via_spoofing():
     headers = {"X-Forwarded-For": f"{spoofed_ip}, {real_ip}"}
     response = client.get("/api/health", headers=headers)
     assert response.status_code == 429, "Rate limit bypass via spoofing detected!"
+    assert response.headers.get("retry-after") == "60"
 
 def test_rate_limit_enforcement():
     request_counts.clear()
@@ -94,6 +95,7 @@ def test_rate_limit_enforcement():
     # 101st blocked
     response = client.get("/api/health", headers=headers)
     assert response.status_code == 429
+    assert response.headers.get("retry-after") == "60"
 
 def test_input_validation_mass_and_geometry_limits():
     """Verify that extremely large mass and geometry values are rejected to prevent numerical DoS."""

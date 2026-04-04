@@ -94,6 +94,7 @@ def test_rate_limiting():
     # Send 101st request (should be blocked)
     response = client.get("/api/health")
     assert response.status_code == 429
+    assert response.headers.get("retry-after") == "60"
     assert response.json() == {"detail": "Too many requests. Please try again later."}
 
     # Ensure headers are present even on 429
