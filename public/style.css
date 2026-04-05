@@ -474,6 +474,13 @@ input:invalid {
     color: #fff;
 }
 
+.social-links a:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--text-color);
+    background-color: var(--accent-red);
+    color: #fff;
+}
+
 .footer-section ul {
     list-style: none;
     padding: 0;
@@ -495,6 +502,14 @@ input:invalid {
 
 .footer-section ul li a:hover,
 .portfolio-link:hover {
+    background-color: var(--text-color);
+    color: var(--accent-yellow);
+}
+
+.footer-section ul li a:focus-visible,
+.portfolio-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--text-color);
     background-color: var(--text-color);
     color: var(--accent-yellow);
 }
