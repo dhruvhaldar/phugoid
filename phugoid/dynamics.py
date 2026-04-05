@@ -360,28 +360,16 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
 
     # Unpack state (u, w, q, theta, z are relevant)
     # Optimization: Direct index access is faster than sequence unpacking for numpy arrays and avoids unused variables.
-    # We remove redundant `isinstance` type checks to rely on duck typing for a safe performance boost.
-    try:
-        u = state[0]
-        w = state[2]
-        q = state[4]
-        theta = state[7]
-        z = state[11]
+    # Using explicit float() casting avoids redundant type-checking overhead and ensures fast scalar instantiation
+    # for C-level math operations, supporting both native lists and NumPy arrays efficiently.
+    u = float(state[0])
+    w = float(state[2])
+    q = float(state[4])
+    theta = float(state[7])
+    z = float(state[11])
 
-        delta_e = control[0]
-        throttle = control[3]
-
-        if type(u) is not float and type(u) is not int:
-            u = float(u)
-            w = float(w)
-            q = float(q)
-            theta = float(theta)
-            z = float(z)
-
-            delta_e = float(delta_e)
-            throttle = float(throttle)
-    except (TypeError, ValueError, IndexError, AttributeError):
-        pass
+    delta_e = float(control[0])
+    throttle = float(control[3])
 
     # Constants
     g = 9.80665
