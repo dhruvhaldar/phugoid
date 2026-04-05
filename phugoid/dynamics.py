@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from functools import lru_cache
 from phugoid.atmosphere import atmosphere, atmosphere_scalar
 
 # Module-level aliases for math functions to avoid local lookup overhead
