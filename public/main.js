@@ -34,6 +34,7 @@ const updateUnits = () => {
 
 presetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+        if (btn.getAttribute('aria-disabled') === 'true') return;
         velocityInput.value = btn.dataset.v;
         altitudeInput.value = btn.dataset.h;
 
@@ -258,8 +259,14 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     btn.innerHTML = 'Calculating... ' + (shortcut ? shortcut.outerHTML : '');
 
     // Disable inputs and preset buttons during calculation
-    const inputs = document.querySelectorAll('#flight-controls input, .preset-btn');
+    const inputs = document.querySelectorAll('#flight-controls input');
     inputs.forEach(input => input.disabled = true);
+
+    const presetBtnsList = document.querySelectorAll('.preset-btn');
+    presetBtnsList.forEach(btn => {
+        btn.setAttribute('aria-disabled', 'true');
+        btn.setAttribute('title', 'Calculation in progress');
+    });
 
     // Disable unit toggle pseudo-labels
     const unitLabels = document.querySelectorAll('.unit-toggle-label');
@@ -387,6 +394,12 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
 
         // Re-enable inputs
         inputs.forEach(input => input.disabled = false);
+
+        const presetBtnsList = document.querySelectorAll('.preset-btn');
+        presetBtnsList.forEach(btn => {
+            btn.removeAttribute('aria-disabled');
+            btn.removeAttribute('title');
+        });
 
         // Re-enable unit toggle pseudo-labels
         unitLabels.forEach(label => label.removeAttribute('aria-disabled'));
