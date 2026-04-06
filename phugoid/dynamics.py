@@ -105,9 +105,7 @@ def equations_of_motion(t, state, aircraft, control):
     b = aircraft.b
 
     # Inertia tensor (simplified diagonal + Ixz)
-    Ixx = aircraft.Ixx
-    Iyy = aircraft.Iyy
-    Izz = aircraft.Izz
+    # Ixx, Iyy, Izz are unused directly, we use precalculated differences and products
     Ixz = aircraft.Ixz
 
     # Atmosphere
@@ -276,10 +274,11 @@ def equations_of_motion(t, state, aircraft, control):
 
     # M_total = [L_moment, M_moment, N_moment]
 
-    term1 = (Izz - Iyy) * q * r - Ixz * p * q
+    # Optimization: Use precalculated inertia differences and combined constants
+    term1 = aircraft.Izz_minus_Iyy * q * r - Ixz * p * q
     # Optimization: Use explicit multiplication instead of **2 for performance
-    term2 = (Ixx - Izz) * p * r + Ixz * (p*p - r*r)
-    term3 = (Iyy - Ixx) * p * q + Ixz * q * r
+    term2 = aircraft.Ixx_minus_Izz * p * r + Ixz * (p*p - r*r)
+    term3 = aircraft.Iyy_minus_Ixx * p * q + Ixz * q * r
 
     # q_dot is decoupled if Ixy=Iyz=0
     # Optimization: Use precalculated inverse Iyy to avoid division
@@ -289,11 +288,13 @@ def equations_of_motion(t, state, aircraft, control):
     # [ Ixx  -Ixz ] [ p_dot ] = [ L - term1 ]
     # [ -Ixz  Izz ] [ r_dot ] = [ N - term3 ]
 
-    # Optimization: Use precalculated inverse inertia determinant
-    # replacing explicit multiplication/subtraction inside the hot loop.
-    inv_det = aircraft.inv_Ixx_Izz_det
-    pdot = (Izz * (L_moment - term1) + Ixz * (N_moment - term3)) * inv_det
-    rdot = (Ixz * (L_moment - term1) + Ixx * (N_moment - term3)) * inv_det
+    # Optimization: Use precalculated combined inertia constants to replace
+    # multiplications by inv_det and additions, saving operations inside the hot loop.
+    L_minus_term1 = L_moment - term1
+    N_minus_term3 = N_moment - term3
+
+    pdot = aircraft.c_pdot_L * L_minus_term1 + aircraft.c_pdot_N * N_minus_term3
+    rdot = aircraft.c_pdot_N * L_minus_term1 + aircraft.c_rdot_N * N_minus_term3
 
     # Kinematics (Euler Angles rates)
     # [phi_dot]   [ 1  sin(phi)tan(theta)  cos(phi)tan(theta) ] [ p ]

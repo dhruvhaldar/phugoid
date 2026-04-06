@@ -24,6 +24,16 @@ class Aircraft:
         self.inv_Iyy = 1.0 / self.Iyy
         self.inv_Ixx_Izz_det = 1.0 / self.Ixx_Izz_det
 
+        # Pre-calculate combined inertia constants for angular acceleration
+        self.c_pdot_L = self.Izz * self.inv_Ixx_Izz_det
+        self.c_pdot_N = self.Ixz * self.inv_Ixx_Izz_det
+        self.c_rdot_N = self.Ixx * self.inv_Ixx_Izz_det
+
+        # Pre-calculate inertia differences
+        self.Izz_minus_Iyy = self.Izz - self.Iyy
+        self.Ixx_minus_Izz = self.Ixx - self.Izz
+        self.Iyy_minus_Ixx = self.Iyy - self.Ixx
+
         # Aerodynamic Coefficients (Longitudinal)
         # Non-dimensional
         self.CL0 = 0.3
