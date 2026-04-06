@@ -1,7 +1,5 @@
 import numpy as np
 import math
-from functools import lru_cache
-
 _pow = math.pow
 
 # Constants
@@ -15,10 +13,13 @@ R = 287.05      # Gas constant for dry air [J/(kg*K)]
 EXPONENT = g / (R * L)
 BASE_FACTOR = L / T0
 
-@lru_cache(maxsize=128)
 def atmosphere_scalar(altitude_val):
     """
-    Optimized scalar implementation of ISA Atmosphere Model with caching.
+    Optimized scalar implementation of ISA Atmosphere Model.
+
+    Optimization: Removed @lru_cache. Continuous float inputs (like altitude changing during flight)
+    cause near 100% cache misses. The overhead of hashing and dictionary lookups makes caching
+    slower than direct math calculations.
 
     Args:
         altitude_val (float): Altitude in meters (MSL).
