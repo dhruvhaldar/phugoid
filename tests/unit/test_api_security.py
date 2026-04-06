@@ -95,6 +95,7 @@ def test_rate_limiting():
     response = client.get("/api/health")
     assert response.status_code == 429
     assert response.json() == {"detail": "Too many requests. Please try again later."}
+    assert response.headers.get("retry-after") == "60"
 
     # Ensure headers are present even on 429
     assert "X-Frame-Options" in response.headers
