@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ConfigDict
@@ -17,6 +18,15 @@ from phugoid.linearize import Linearizer
 from phugoid.modes import calculate_damping_ratio, calculate_natural_frequency
 
 app = FastAPI()
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Avoid RecursionError for deeply nested payload DoS vectors
+    errors = exc.errors()
+    for error in errors:
+        error.pop("input", None)
+        error.pop("ctx", None)
+    return JSONResponse(status_code=422, content={"detail": errors})
 
 # Global storage for rate limiting (IP -> list of timestamps)
 request_counts = defaultdict(list)
