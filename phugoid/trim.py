@@ -29,9 +29,7 @@ def solve_3x3(A, b):
     # due to numpy array instantiation. Explicit calculation is ~6x faster.
 
     # Optimization: Flatten array access to avoid repeated nested indexing overhead
-    a00, a01, a02 = A[0]
-    a10, a11, a12 = A[1]
-    a20, a21, a22 = A[2]
+    a00, a01, a02, a10, a11, a12, a20, a21, a22 = A
 
     # Pre-calculate common 2x2 determinants
     m11_22 = a11 * a22 - a12 * a21
@@ -51,7 +49,7 @@ def solve_3x3(A, b):
     x1 = (-m10_22 * b0 + (a00 * a22 - a02 * a20) * b1 + (a02 * a10 - a00 * a12) * b2) * inv_det
     x2 = (m10_21 * b0 + (a01 * a20 - a00 * a21) * b1 + (a00 * a11 - a01 * a10) * b2) * inv_det
 
-    return [x0, x1, x2]
+    return x0, x1, x2
 
 class TrimSolver:
     def __init__(self, aircraft):
@@ -85,7 +83,7 @@ class TrimSolver:
             control[3] = throttle
 
             derivs = longitudinal_equations_of_motion(0, state, self.aircraft, control)
-            return [derivs[0], derivs[2], derivs[4]]
+            return derivs[0], derivs[2], derivs[4]
 
         def jacobian(x, f0, eps=1e-5):
             # Optimization: Use lists entirely instead of numpy arrays to avoid
@@ -109,14 +107,17 @@ class TrimSolver:
             x[2] = old_val
 
             # Optimization: Unpack f0 to avoid repeated index lookups
-            f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
+            f0_0, f0_1, f0_2 = f0
+            fp0_0, fp0_1, fp0_2 = f_plus0
+            fp1_0, fp1_1, fp1_2 = f_plus1
+            fp2_0, fp2_1, fp2_2 = f_plus2
 
-            # Construct row-major J for numpy solve
-            J = [
-                [(f_plus0[0] - f0_0) * inv_eps, (f_plus1[0] - f0_0) * inv_eps, (f_plus2[0] - f0_0) * inv_eps],
-                [(f_plus0[1] - f0_1) * inv_eps, (f_plus1[1] - f0_1) * inv_eps, (f_plus2[1] - f0_1) * inv_eps],
-                [(f_plus0[2] - f0_2) * inv_eps, (f_plus1[2] - f0_2) * inv_eps, (f_plus2[2] - f0_2) * inv_eps]
-            ]
+            # Construct flat J for fast solve
+            J = (
+                (fp0_0 - f0_0) * inv_eps, (fp1_0 - f0_0) * inv_eps, (fp2_0 - f0_0) * inv_eps,
+                (fp0_1 - f0_1) * inv_eps, (fp1_1 - f0_1) * inv_eps, (fp2_1 - f0_1) * inv_eps,
+                (fp0_2 - f0_2) * inv_eps, (fp1_2 - f0_2) * inv_eps, (fp2_2 - f0_2) * inv_eps
+            )
 
             return J
 
@@ -130,7 +131,7 @@ class TrimSolver:
             f0 = objective(x)
             # Optimization: Use explicit multiplication instead of **2 for performance
             # Unpack to avoid multiple list lookups
-            f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
+            f0_0, f0_1, f0_2 = f0
             error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
             
             if error < tol:
@@ -140,11 +141,11 @@ class TrimSolver:
             J = jacobian(x, f0)
             try:
                 # Solve J * dx = -f0
-                dx = solve_3x3(J, [-f0_0, -f0_1, -f0_2])
+                dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
                 # Damping factor to prevent divergence
-                x[0] += 0.5 * dx[0]
-                x[1] += 0.5 * dx[1]
-                x[2] += 0.5 * dx[2]
+                x[0] += 0.5 * dx0
+                x[1] += 0.5 * dx1
+                x[2] += 0.5 * dx2
                 
                 # Constrain throttle between 0 and 1
                 if x[2] < 0.0: x[2] = 0.0
@@ -158,7 +159,7 @@ class TrimSolver:
             for i in range(max_iter):
                 f0 = objective(x)
                 # Optimization: Use explicit multiplication instead of **2 for performance
-                f0_0, f0_1, f0_2 = f0[0], f0[1], f0[2]
+                f0_0, f0_1, f0_2 = f0
                 error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
                 
                 if error < tol:
@@ -167,10 +168,10 @@ class TrimSolver:
                     
                 J = jacobian(x, f0)
                 try:
-                    dx = solve_3x3(J, [-f0_0, -f0_1, -f0_2])
-                    x[0] += 0.5 * dx[0]
-                    x[1] += 0.5 * dx[1]
-                    x[2] += 0.5 * dx[2]
+                    dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
+                    x[0] += 0.5 * dx0
+                    x[1] += 0.5 * dx1
+                    x[2] += 0.5 * dx2
 
                     if x[2] < 0.0: x[2] = 0.0
                     elif x[2] > 1.0: x[2] = 1.0
