@@ -336,10 +336,10 @@ def equations_of_motion(t, state, aircraft, control):
     x_dot = c_ps * u_theta - s_ps * v_phi
     y_dot = s_ps * u_theta + c_ps * v_phi
 
-    result = [udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot]
+    result = (udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot)
 
-    # Return list if input was list (TrimSolver optimization)
-    # Avoids np.array creation overhead (~1.3us) in tight loops
+    # Return tuple if input was list (TrimSolver optimization)
+    # Avoids np.array and list creation overhead in tight loops
     if was_list:
         return result
     else:
@@ -484,6 +484,6 @@ def longitudinal_equations_of_motion(t, state, aircraft, control):
     # z_dot = -s_th * u + c_th * w
     z_dot = -s_th * u + c_th * w
 
-    # Return list compatible with full state
-    # [udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot]
-    return [udot, 0.0, wdot, 0.0, qdot, 0.0, 0.0, theta_dot, 0.0, x_dot, 0.0, z_dot]
+    # Return tuple compatible with full state
+    # (udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot)
+    return (udot, 0.0, wdot, 0.0, qdot, 0.0, 0.0, theta_dot, 0.0, x_dot, 0.0, z_dot)
