@@ -3,6 +3,13 @@ const presetBtns = document.querySelectorAll('.preset-btn');
 const velocityInput = document.getElementById('velocity');
 const altitudeInput = document.getElementById('altitude');
 const statusRegion = document.getElementById('status-region');
+
+const clearErrorMsg = () => {
+    const errDiv = document.getElementById('error-message');
+    if (errDiv) errDiv.textContent = '';
+};
+velocityInput.addEventListener('input', clearErrorMsg);
+altitudeInput.addEventListener('input', clearErrorMsg);
 const velocityDisplay = document.getElementById('velocity-unit-display');
 const altitudeDisplay = document.getElementById('altitude-unit-display');
 const unitToggle = document.getElementById('unit-toggle');
