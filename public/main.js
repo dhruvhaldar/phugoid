@@ -63,6 +63,12 @@ presetBtns.forEach(btn => {
 
         updateUnits();
 
+        // Screen reader announcement for preset application
+        const statusRegion = document.getElementById('status-region');
+        if (statusRegion) {
+            statusRegion.textContent = `${btn.textContent.trim()} preset applied.`;
+        }
+
         // Mark results as stale if visible
         const resultsSection = document.getElementById('results');
         const vizSection = document.getElementById('visualization');
