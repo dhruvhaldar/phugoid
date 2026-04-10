@@ -13,18 +13,18 @@ def test_equations_of_motion_return_type():
     assert isinstance(res_np, np.ndarray)
     assert res_np.shape == (12,)
 
-    # Test list input -> list output
+    # Test list input -> tuple output (performance optimization)
     state_list = [0.0] * 12
     control_list = [0.0] * 4
-    res_list = equations_of_motion(0, state_list, aircraft, control_list)
-    assert isinstance(res_list, list)
-    assert len(res_list) == 12
+    res_tuple = equations_of_motion(0, state_list, aircraft, control_list)
+    assert isinstance(res_tuple, tuple)
+    assert len(res_tuple) == 12
 
-    # Test list of numpy scalars -> list output
+    # Test list of numpy scalars -> tuple output
     state_np_list = [np.float64(0.0) for _ in range(12)]
     control_np_list = [np.float64(0.0) for _ in range(4)]
     res_np_list = equations_of_motion(0, state_np_list, aircraft, control_np_list)
-    assert isinstance(res_np_list, list)
+    assert isinstance(res_np_list, tuple)
     assert len(res_np_list) == 12
     # Verify elements are floats (optimization worked and returned lists of floats)
     assert isinstance(res_np_list[0], float)
