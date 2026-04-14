@@ -60,51 +60,24 @@ class TrimSolver:
         Finds the trim state for steady level flight (or steady climb/descent)
         using a custom Newton-Raphson solver to avoid SciPy dependency.
         """
-        # Optimization: Pre-allocate state and control lists outside the hot objective loop
-        # to avoid constant-time instantiation overhead on every function call.
-        state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -altitude]
-        control = [0.0, 0.0, 0.0, 0.0]
-
-        def objective(x):
-            alpha = x[0]
-            elevator = x[1]
-            throttle = x[2]
-
+        def objective(alpha, elevator, throttle):
             theta = alpha + flight_path_angle
             u = velocity * _cos(alpha)
             w = velocity * _sin(alpha)
 
-            # Mutate pre-allocated lists instead of creating new ones
-            state[0] = u
-            state[2] = w
-            state[7] = theta
+            # Optimization: Pass tuple directly to avoid list instantiation/mutation overhead
+            state_tup = (u, 0.0, w, 0.0, 0.0, 0.0, 0.0, theta, 0.0, 0.0, 0.0, -altitude)
+            control_tup = (elevator, 0.0, 0.0, throttle)
 
-            control[0] = elevator
-            control[3] = throttle
-
-            derivs = longitudinal_equations_of_motion(0, state, self.aircraft, control)
+            derivs = longitudinal_equations_of_motion(0, state_tup, self.aircraft, control_tup)
             return derivs[0], derivs[2], derivs[4]
 
-        def jacobian(x, f0, eps=1e-5):
-            # Optimization: Use lists entirely instead of numpy arrays to avoid
-            # constant-time instantiation overhead in this tight inner loop.
-            # Mutate state lists in-place for the perturbation to avoid array/list allocations.
+        def jacobian(alpha, elevator, throttle, f0, eps=1e-5):
             inv_eps = 1.0 / eps
 
-            old_val = x[0]
-            x[0] = old_val + eps
-            f_plus0 = objective(x)
-            x[0] = old_val
-
-            old_val = x[1]
-            x[1] = old_val + eps
-            f_plus1 = objective(x)
-            x[1] = old_val
-
-            old_val = x[2]
-            x[2] = old_val + eps
-            f_plus2 = objective(x)
-            x[2] = old_val
+            f_plus0 = objective(alpha + eps, elevator, throttle)
+            f_plus1 = objective(alpha, elevator + eps, throttle)
+            f_plus2 = objective(alpha, elevator, throttle + eps)
 
             # Optimization: Unpack f0 to avoid repeated index lookups
             f0_0, f0_1, f0_2 = f0
@@ -122,13 +95,13 @@ class TrimSolver:
             return J
 
         # Custom Newton-Raphson solver
-        x = [0.05, -0.05, 0.5]
+        alpha, elevator, throttle = 0.05, -0.05, 0.5
         max_iter = 100
         tol = 1e-8
         success = False
 
         for i in range(max_iter):
-            f0 = objective(x)
+            f0 = objective(alpha, elevator, throttle)
             # Optimization: Use explicit multiplication instead of **2 for performance
             # Unpack to avoid multiple list lookups
             f0_0, f0_1, f0_2 = f0
@@ -138,26 +111,26 @@ class TrimSolver:
                 success = True
                 break
                 
-            J = jacobian(x, f0)
+            J = jacobian(alpha, elevator, throttle, f0)
             try:
                 # Solve J * dx = -f0
                 dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
                 # Damping factor to prevent divergence
-                x[0] += 0.5 * dx0
-                x[1] += 0.5 * dx1
-                x[2] += 0.5 * dx2
+                alpha += 0.5 * dx0
+                elevator += 0.5 * dx1
+                throttle += 0.5 * dx2
                 
                 # Constrain throttle between 0 and 1
-                if x[2] < 0.0: x[2] = 0.0
-                elif x[2] > 1.0: x[2] = 1.0
+                if throttle < 0.0: throttle = 0.0
+                elif throttle > 1.0: throttle = 1.0
             except SingularMatrixError:
                 break
 
         if not success:
             # Try alternate guess
-            x = [0.1, -0.1, 0.8]
+            alpha, elevator, throttle = 0.1, -0.1, 0.8
             for i in range(max_iter):
-                f0 = objective(x)
+                f0 = objective(alpha, elevator, throttle)
                 # Optimization: Use explicit multiplication instead of **2 for performance
                 f0_0, f0_1, f0_2 = f0
                 error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
@@ -166,22 +139,22 @@ class TrimSolver:
                     success = True
                     break
                     
-                J = jacobian(x, f0)
+                J = jacobian(alpha, elevator, throttle, f0)
                 try:
                     dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
-                    x[0] += 0.5 * dx0
-                    x[1] += 0.5 * dx1
-                    x[2] += 0.5 * dx2
+                    alpha += 0.5 * dx0
+                    elevator += 0.5 * dx1
+                    throttle += 0.5 * dx2
 
-                    if x[2] < 0.0: x[2] = 0.0
-                    elif x[2] > 1.0: x[2] = 1.0
+                    if throttle < 0.0: throttle = 0.0
+                    elif throttle > 1.0: throttle = 1.0
                 except SingularMatrixError:
                     break
                     
             if not success:
                 raise RuntimeError(f"Trim solver failed to converge. Final error: {error}")
 
-        alpha_trim, elevator_trim, throttle_trim = x[0], x[1], x[2]
+        alpha_trim, elevator_trim, throttle_trim = alpha, elevator, throttle
         theta_trim = alpha_trim + flight_path_angle
         u_trim = velocity * np.cos(alpha_trim)
         w_trim = velocity * np.sin(alpha_trim)
