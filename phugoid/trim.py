@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from phugoid.dynamics import equations_of_motion, longitudinal_equations_of_motion
+from phugoid.atmosphere import atmosphere_scalar
 
 _sin = math.sin
 _cos = math.cos
@@ -60,6 +61,9 @@ class TrimSolver:
         Finds the trim state for steady level flight (or steady climb/descent)
         using a custom Newton-Raphson solver to avoid SciPy dependency.
         """
+        # Calculate atmosphere once, as altitude is constant during root-finding
+        _, _, rho_val = atmosphere_scalar(altitude)
+
         def objective(alpha, elevator, throttle):
             theta = alpha + flight_path_angle
             u = velocity * _cos(alpha)
@@ -69,7 +73,7 @@ class TrimSolver:
             state_tup = (u, 0.0, w, 0.0, 0.0, 0.0, 0.0, theta, 0.0, 0.0, 0.0, -altitude)
             control_tup = (elevator, 0.0, 0.0, throttle)
 
-            derivs = longitudinal_equations_of_motion(0, state_tup, self.aircraft, control_tup)
+            derivs = longitudinal_equations_of_motion(0, state_tup, self.aircraft, control_tup, rho=rho_val)
             return derivs[0], derivs[2], derivs[4]
 
         def jacobian(alpha, elevator, throttle, f0, eps=1e-5):
