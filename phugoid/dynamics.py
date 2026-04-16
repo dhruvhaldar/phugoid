@@ -166,8 +166,18 @@ def equations_of_motion(t, state, aircraft, control):
     # Aerodynamic Angles
     if is_scalar:
         alpha = _atan2(w, u)
-        s_alpha = _sin(alpha)
-        c_alpha = _cos(alpha)
+        # Optimization: Use algebraic trig for alpha.
+        # Note: In 3D (v != 0), V = sqrt(u^2 + v^2 + w^2).
+        # The correct longitudinal velocity magnitude is V_lon = sqrt(u^2 + w^2).
+        # We can calculate inv_V_lon to avoid trig functions.
+        V_lon_sq = u*u + w*w
+        if V_lon_sq < 0.01:
+            s_alpha = _sin(alpha)
+            c_alpha = _cos(alpha)
+        else:
+            inv_V_lon = V_lon_sq ** -0.5
+            s_alpha = w * inv_V_lon
+            c_alpha = u * inv_V_lon
     else:
         alpha = atan2(w, u)
         s_alpha = sin(alpha)
