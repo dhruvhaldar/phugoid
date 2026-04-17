@@ -21,3 +21,7 @@
 ## 2026-04-16 - Algebraic Trig for Alpha (Revised)
 **Learning:** In high-frequency physics functions (`equations_of_motion`), calculating aerodynamic angles like `alpha` requires an `atan2(w, u)` call, and then its sine and cosine are required later (`sin(alpha)`, `cos(alpha)`). This results in 3 expensive trigonometric calls. Since `sin(alpha) = w/V_lon` and `cos(alpha) = u/V_lon` algebraically (where `V_lon = sqrt(u^2 + w^2)`), substituting the two trigonometric calls with simple multiplications provides a ~9-10% performance improvement in the hot path. Note that we must calculate `V_lon` correctly for 3D flight (where `v != 0`, `V` is not simply `sqrt(u^2 + w^2)`), and carefully handle the near-zero velocity edge case.
 **Action:** Use algebraic equivalents for trigonometric functions where the sides of the triangle can be safely calculated without trig functions, specifically calculating the appropriate magnitude (`V_lon`) and substituting `math.sin` and `math.cos` calls.
+
+## 2024-05-18 - Flat Tuples for Matrix Columns
+**Learning:** In high-frequency numerical loops like `Linearizer.compute_jacobian`, dynamically allocating Python lists for columns (e.g., `A_cols[i] = [...]`) introduces significant memory allocation penalties.
+**Action:** Replace dynamically allocated lists with fixed-length flat tuples (e.g., `A_cols[i] = (...)`) in hot paths to eliminate memory allocation overhead and improve execution speed without affecting numpy array conversion.
