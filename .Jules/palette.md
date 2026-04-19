@@ -55,3 +55,7 @@
 ## 2026-11-27 - Input Validation Error Persistence
 **Learning:** When users encounter an API-level form validation error (displayed via a global `#error-message` container), they often become confused if the error persists while they actively type to correct their inputs. They assume the form is still in an invalid state, even if they have fixed the issue locally.
 **Action:** To prevent user confusion during form validation, global error messages should be cleared immediately upon user correction by attaching `input` event listeners to the relevant form fields, rather than persisting stale errors until the next submission.
+
+## 2026-11-28 - ARIA Live Region Spam on Continuous Input
+**Learning:** When using ARIA live regions to announce dynamic state changes (like "Inputs changed" when marking results as stale), triggering the announcement directly from continuous input events (like typing in a text field) can severely spam screen reader users, causing frustration and interrupting other important announcements.
+**Action:** Always guard ARIA live region announcements that are tied to continuous input events by checking the current state first. Ensure the announcement only fires once upon the initial state transition (e.g., from "fresh" to "stale").

@@ -118,19 +118,21 @@ const markResultsStale = () => {
 
     // Only mark stale if results are currently visible
     if (resultsSection && !resultsSection.classList.contains('hidden')) {
-        resultsSection.classList.add('stale');
-        if (vizSection) vizSection.classList.add('stale');
+        if (!resultsSection.classList.contains('stale')) {
+            resultsSection.classList.add('stale');
+            if (vizSection) vizSection.classList.add('stale');
 
-        // Announce to screen readers
-        if (statusRegion) {
-            statusRegion.textContent = 'Inputs changed. Results are outdated.';
-        }
+            // Announce to screen readers
+            if (statusRegion) {
+                statusRegion.textContent = 'Inputs changed. Results are outdated.';
+            }
 
-        const copyBtn = document.getElementById('copy-trim-btn');
-        if (copyBtn) {
-            copyBtn.setAttribute('aria-disabled', 'true');
-            copyBtn.setAttribute('aria-label', 'Results outdated - Recalculate');
-            copyBtn.setAttribute('title', 'Results outdated - Recalculate');
+            const copyBtn = document.getElementById('copy-trim-btn');
+            if (copyBtn) {
+                copyBtn.setAttribute('aria-disabled', 'true');
+                copyBtn.setAttribute('aria-label', 'Results outdated - Recalculate');
+                copyBtn.setAttribute('title', 'Results outdated - Recalculate');
+            }
         }
     }
 };
