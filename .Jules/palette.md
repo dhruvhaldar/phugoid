@@ -55,3 +55,7 @@
 ## 2026-11-27 - Input Validation Error Persistence
 **Learning:** When users encounter an API-level form validation error (displayed via a global `#error-message` container), they often become confused if the error persists while they actively type to correct their inputs. They assume the form is still in an invalid state, even if they have fixed the issue locally.
 **Action:** To prevent user confusion during form validation, global error messages should be cleared immediately upon user correction by attaching `input` event listeners to the relevant form fields, rather than persisting stale errors until the next submission.
+
+## 2026-11-28 - Dynamic Icon Accessibility
+**Learning:** When dynamically injecting inline SVGs for purely decorative visual feedback (e.g., an icon next to 'Copied!' text), screen readers might announce confusing content if the SVG lacks `aria-hidden="true"`.
+**Action:** Always add `aria-hidden="true"` to purely decorative `<svg>` elements dynamically inserted via JavaScript.

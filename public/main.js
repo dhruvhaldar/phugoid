@@ -117,13 +117,13 @@ const markResultsStale = () => {
     const vizSection = document.getElementById('visualization');
 
     // Only mark stale if results are currently visible
-    if (resultsSection && !resultsSection.classList.contains('hidden')) {
+    if (resultsSection && !resultsSection.classList.contains('hidden') && !resultsSection.classList.contains('stale')) {
         resultsSection.classList.add('stale');
         if (vizSection) vizSection.classList.add('stale');
 
         // Announce to screen readers
         if (statusRegion) {
-            statusRegion.textContent = 'Inputs changed. Results are outdated.';
+            statusRegion.textContent = 'Inputs changed. Results are now outdated, please recalculate.';
         }
 
         const copyBtn = document.getElementById('copy-trim-btn');
@@ -446,7 +446,7 @@ Theta: ${theta} deg`;
 
             // Visual Feedback
             copyBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 <span class="btn-text">Copied!</span>
