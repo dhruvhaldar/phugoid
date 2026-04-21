@@ -116,8 +116,8 @@ const markResultsStale = () => {
     const resultsSection = document.getElementById('results');
     const vizSection = document.getElementById('visualization');
 
-    // Only mark stale if results are currently visible
-    if (resultsSection && !resultsSection.classList.contains('hidden')) {
+    // Only mark stale if results are currently visible and not already stale
+    if (resultsSection && !resultsSection.classList.contains('hidden') && !resultsSection.classList.contains('stale')) {
         resultsSection.classList.add('stale');
         if (vizSection) vizSection.classList.add('stale');
 
