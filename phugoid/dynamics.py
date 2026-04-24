@@ -132,24 +132,16 @@ def equations_of_motion(t, state, aircraft, control):
     # Benchmark shows sqrt(sum sq) is faster than hypot for 3 args in this context (~37% faster)
     if is_scalar:
         V_sq = u*u + v*v + w*w
-        V = _sqrt(V_sq)
-    else:
-        # Optimization: Use explicit multiplication instead of **2 for numpy arrays to avoid exponentiation overhead
-        V_sq = u*u + v*v + w*w
-        V = sqrt(V_sq)
-
-    # Avoid division by zero
-    if is_scalar:
-        if V < 0.1:
-            V = 0.1
+        if V_sq < 0.01:
             V_sq = 0.01
             inv_V = 10.0
         else:
-            inv_V = 1.0 / V
+            inv_V = 1.0 / _sqrt(V_sq)
     else:
-        V = np.maximum(V, 0.1)
+        # Optimization: Use explicit multiplication instead of **2 for numpy arrays to avoid exponentiation overhead
+        V_sq = u*u + v*v + w*w
         V_sq = np.maximum(V_sq, 0.01)
-        inv_V = 1.0 / V
+        inv_V = 1.0 / sqrt(V_sq)
 
     # Aerodynamic Angles
     if is_scalar:
@@ -413,11 +405,9 @@ def longitudinal_equations_of_motion(t, state, aircraft, control, rho=None):
     # Avoid division by zero
     if V_sq < 0.01:
         V_sq = 0.01
-        V = 0.1
         inv_V = 10.0 # 1.0 / 0.1
     else:
-        V = _sqrt(V_sq)
-        inv_V = 1.0 / V
+        inv_V = 1.0 / _sqrt(V_sq)
 
     # Aerodynamic Angles
     alpha = _atan2(w, u)
