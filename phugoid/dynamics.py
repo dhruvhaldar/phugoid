@@ -38,23 +38,8 @@ def equations_of_motion(t, state, aircraft, control):
     # Duck typing and direct indexing is faster and avoids NumPy scalar instantiation overhead.
     try:
         if type(state) is tuple or type(state) is list:
-            u = state[0]
-            v = state[1]
-            w = state[2]
-            p = state[3]
-            q = state[4]
-            r = state[5]
-            phi = state[6]
-            theta = state[7]
-            psi = state[8]
-            # x = state[9]  # Unused
-            # y = state[10] # Unused
-            z = state[11]
-
-            delta_e = control[0]
-            delta_a = control[1]
-            delta_r = control[2]
-            throttle = control[3]
+            u, v, w, p, q, r, phi, theta, psi, _, _, z = state
+            delta_e, delta_a, delta_r, throttle = control
             was_list = True
         else:
             u = float(state[0])
@@ -377,14 +362,8 @@ def longitudinal_equations_of_motion(t, state, aircraft, control, rho=None):
     # for C-level math operations, supporting both native lists and NumPy arrays efficiently.
     # Fast path: sequence assignment is faster for tuple/list than index + float()
     if type(state) is tuple or type(state) is list:
-        u = state[0]
-        w = state[2]
-        q = state[4]
-        theta = state[7]
-        z = state[11]
-
-        delta_e = control[0]
-        throttle = control[3]
+        u, _, w, _, q, _, _, theta, _, _, _, z = state
+        delta_e, _, _, throttle = control
     else:
         u = float(state[0])
         w = float(state[2])

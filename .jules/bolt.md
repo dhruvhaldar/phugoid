@@ -25,3 +25,7 @@
 ## 2024-05-18 - Flat Tuples for Matrix Columns
 **Learning:** In high-frequency numerical loops like `Linearizer.compute_jacobian`, dynamically allocating Python lists for columns (e.g., `A_cols[i] = [...]`) introduces significant memory allocation penalties.
 **Action:** Replace dynamically allocated lists with fixed-length flat tuples (e.g., `A_cols[i] = (...)`) in hot paths to eliminate memory allocation overhead and improve execution speed without affecting numpy array conversion.
+
+## 2026-04-24 - Flat Tuple Unpacking in Core Physics Loops
+**Learning:** In the `equations_of_motion` function and its longitudinal variant, extracting elements from tuple/list state vectors was previously done using individual index assignments (e.g., `u = state[0]`, `v = state[1]`). Benchmarking revealed that replacing this block with Python's native flat tuple sequence unpacking (e.g., `u, v, w, p, q, r, phi, theta, psi, _, _, z = state`) yields a significant performance improvement (nearly cutting the base Python execution time of the function in half). This is because Python handles unpacking natively at the C-level, eliminating the overhead of repeated list index lookups and assignment operations in tight loops.
+**Action:** When extracting multiple contiguous elements from flat sequences in hot numerical paths, use native sequence unpacking instead of individual index lookups.
