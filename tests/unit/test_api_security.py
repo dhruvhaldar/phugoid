@@ -62,7 +62,7 @@ def test_security_headers():
     # These headers are added by our middleware
     assert response.headers["X-Content-Type-Options"] == "nosniff"
     assert response.headers["X-Frame-Options"] == "DENY"
-    assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains"
+    assert response.headers["Strict-Transport-Security"] == "max-age=31536000; includeSubDomains; preload"
     assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
     assert response.headers["Permissions-Policy"] == "geolocation=(), microphone=(), camera=()"
     assert response.headers["Cross-Origin-Opener-Policy"] == "same-origin"
@@ -75,6 +75,7 @@ def test_security_headers():
     assert "base-uri 'self'" in csp
     assert "form-action 'self'" in csp
     assert "frame-ancestors 'none'" in csp
+    assert "upgrade-insecure-requests;" in csp
 
     # Ensure unsafe-inline is NOT in script-src
     script_src = csp.split("script-src")[1].split(";")[0]
