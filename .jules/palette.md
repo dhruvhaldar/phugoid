@@ -16,3 +16,6 @@
 ## 2024-04-01 - Respecting OS-Level Reduced Motion
 **Learning:** JavaScript-triggered scroll behaviors and animations (e.g., `element.scrollIntoView({ behavior: 'smooth' })`) bypass CSS `@media (prefers-reduced-motion: reduce)` rules.
 **Action:** Always wrap imperative JavaScript animations and smooth scrolling in a `window.matchMedia('(prefers-reduced-motion: reduce)').matches` check to ensure OS accessibility preferences are respected, falling back to instant/auto behavior if true.
+## 2025-02-23 - Interactive Visualizations Accessibility
+**Learning:** When custom visualization elements or interactive containers (like the `#pole-plot` or `#3d-viewer` elements) use `role="img"` and `aria-label` to provide context, they are ignored by keyboard navigation if they lack a `tabindex`.
+**Action:** Always add `tabindex="0"` to focusable custom visualization containers to ensure they are accessible via keyboard navigation and properly announced by screen readers.
