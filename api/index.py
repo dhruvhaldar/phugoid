@@ -3,6 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ConfigDict
+import logging
 from typing import List, Optional
 import time
 import hashlib
@@ -18,6 +19,9 @@ from phugoid.linearize import Linearizer
 from phugoid.modes import calculate_damping_ratio, calculate_natural_frequency
 
 app = FastAPI()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -232,15 +236,15 @@ def calculate_trim(req: TrimRequest):
         )
     except RuntimeError as e:
         # Expected runtime errors like convergence failure
-        print(f"Trim Runtime Error: {e}")
+        logger.warning(f"Trim Runtime Error: {e}")
         raise HTTPException(status_code=422, detail="Calculation failed to converge. Please check your inputs.")
     except ValueError as e:
         # Handle ValueError, e.g. for invalid arguments to math functions internally
-        print(f"Trim Value Error: {e}")
+        logger.warning(f"Trim Value Error: {e}")
         raise HTTPException(status_code=400, detail="Invalid mathematical operation during calculation.")
     except Exception as e:
         # Unexpected errors
-        print(f"Internal Error in /api/trim: {e}")
+        logger.error(f"Internal Error in /api/trim: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An internal error occurred.")
 
 @app.post("/api/analyze", response_model=AnalysisResponse)
@@ -273,13 +277,13 @@ def analyze_stability(req: AnalysisRequest):
         )
 
     except RuntimeError as e:
-        print(f"Analysis Runtime Error: {e}")
+        logger.warning(f"Analysis Runtime Error: {e}")
         raise HTTPException(status_code=422, detail="Calculation failed to converge. Please check your inputs.")
     except ValueError as e:
-        print(f"Analysis Value Error: {e}")
+        logger.warning(f"Analysis Value Error: {e}")
         raise HTTPException(status_code=400, detail="Invalid mathematical operation during analysis.")
     except Exception as e:
-        print(f"Internal Error in /api/analyze: {e}")
+        logger.error(f"Internal Error in /api/analyze: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An internal error occurred.")
 
 if os.path.exists("public"):
