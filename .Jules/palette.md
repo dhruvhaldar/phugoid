@@ -59,3 +59,7 @@
 ## 2026-04-21 - ARIA Live Region Spam on Continuous Input
 **Learning:** Attaching ARIA live region announcements to continuous input events (like typing in a text field that triggers a state update function on every keystroke) will repeatedly announce the same message to screen reader users, causing severe frustration and making the interface unusable.
 **Action:** Always wrap ARIA live region announcements in state guards. Ensure they only fire upon the *initial transition* into a new state (e.g., checking if the element doesn't already have a 'stale' class before announcing that results are stale).
+
+## 2026-11-28 - Focus Indicators for Custom Interactive Containers
+**Learning:** Custom visualization containers (like 3D viewers or interactive charts) that are made keyboard-focusable via `tabindex="0"` inherently lack browser-default focus outlines. Without explicit focus indicators, keyboard and screen reader users cannot determine when they have successfully navigated to these elements.
+**Action:** Whenever applying `tabindex="0"` to make a custom element or visualization container accessible via keyboard navigation, always pair it with a high-contrast `:focus-visible` CSS rule (like a double ring using `box-shadow`) to ensure the focus state is visually apparent.
