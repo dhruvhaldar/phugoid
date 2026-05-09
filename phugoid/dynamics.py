@@ -155,7 +155,9 @@ def equations_of_motion(t, state, aircraft, control):
             s_alpha = _sin(alpha)
             c_alpha = _cos(alpha)
         else:
-            inv_V_lon = V_lon_sq ** -0.5
+            # Optimization: Calculate inverse square root using 1.0 / math.sqrt()
+            # instead of ** -0.5 as it avoids underlying C pow() overhead, yielding measurable gains.
+            inv_V_lon = 1.0 / _sqrt(V_lon_sq)
             s_alpha = w * inv_V_lon
             c_alpha = u * inv_V_lon
     else:
