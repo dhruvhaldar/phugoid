@@ -435,7 +435,17 @@ if (copyBtn) {
         const throttle = document.getElementById('trim-throttle').textContent;
         const theta = document.getElementById('trim-theta').textContent;
 
-        const text = `Trim State:
+        const velocity = document.getElementById('velocity').value;
+        const altitude = document.getElementById('altitude').value;
+        const isImperial = document.getElementById('unit-toggle') && document.getElementById('unit-toggle').checked;
+        const vUnit = isImperial ? 'kts' : 'm/s';
+        const hUnit = isImperial ? 'ft' : 'm';
+
+        const text = `Flight Conditions:
+Velocity: ${velocity} ${vUnit}
+Altitude: ${altitude} ${hUnit}
+
+Trim State:
 Alpha: ${alpha} deg
 Elevator: ${elevator} deg
 Throttle: ${throttle} %
