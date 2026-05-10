@@ -74,14 +74,19 @@ class TrimSolver:
             control_tup = (elevator, 0.0, 0.0, throttle)
 
             derivs = longitudinal_equations_of_motion(0, state_tup, self.aircraft, control_tup, rho=rho_val)
+            return (derivs[0], derivs[2], derivs[4]), state_tup
+
+        def objective_state(state_tup, elevator, throttle):
+            control_tup = (elevator, 0.0, 0.0, throttle)
+            derivs = longitudinal_equations_of_motion(0, state_tup, self.aircraft, control_tup, rho=rho_val)
             return derivs[0], derivs[2], derivs[4]
 
-        def jacobian(alpha, elevator, throttle, f0, eps=1e-5):
+        def jacobian(alpha, elevator, throttle, f0, state_tup0, eps=1e-5):
             inv_eps = 1.0 / eps
 
-            f_plus0 = objective(alpha + eps, elevator, throttle)
-            f_plus1 = objective(alpha, elevator + eps, throttle)
-            f_plus2 = objective(alpha, elevator, throttle + eps)
+            f_plus0, _ = objective(alpha + eps, elevator, throttle)
+            f_plus1 = objective_state(state_tup0, elevator + eps, throttle)
+            f_plus2 = objective_state(state_tup0, elevator, throttle + eps)
 
             # Optimization: Unpack f0 to avoid repeated index lookups
             f0_0, f0_1, f0_2 = f0
@@ -105,7 +110,7 @@ class TrimSolver:
         success = False
 
         for i in range(max_iter):
-            f0 = objective(alpha, elevator, throttle)
+            f0, state_tup0 = objective(alpha, elevator, throttle)
             # Optimization: Use explicit multiplication instead of **2 for performance
             # Unpack to avoid multiple list lookups
             f0_0, f0_1, f0_2 = f0
@@ -115,7 +120,7 @@ class TrimSolver:
                 success = True
                 break
                 
-            J = jacobian(alpha, elevator, throttle, f0)
+            J = jacobian(alpha, elevator, throttle, f0, state_tup0)
             try:
                 # Solve J * dx = -f0
                 dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
@@ -134,7 +139,7 @@ class TrimSolver:
             # Try alternate guess
             alpha, elevator, throttle = 0.1, -0.1, 0.8
             for i in range(max_iter):
-                f0 = objective(alpha, elevator, throttle)
+                f0, state_tup0 = objective(alpha, elevator, throttle)
                 # Optimization: Use explicit multiplication instead of **2 for performance
                 f0_0, f0_1, f0_2 = f0
                 error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
@@ -143,7 +148,7 @@ class TrimSolver:
                     success = True
                     break
                     
-                J = jacobian(alpha, elevator, throttle, f0)
+                J = jacobian(alpha, elevator, throttle, f0, state_tup0)
                 try:
                     dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
                     alpha += 0.5 * dx0
