@@ -63,3 +63,7 @@
 ## 2026-11-28 - Focus Indicators for Custom Interactive Containers
 **Learning:** Custom visualization containers (like 3D viewers or interactive charts) that are made keyboard-focusable via `tabindex="0"` inherently lack browser-default focus outlines. Without explicit focus indicators, keyboard and screen reader users cannot determine when they have successfully navigated to these elements.
 **Action:** Whenever applying `tabindex="0"` to make a custom element or visualization container accessible via keyboard navigation, always pair it with a high-contrast `:focus-visible` CSS rule (like a double ring using `box-shadow`) to ensure the focus state is visually apparent.
+
+## 2026-11-29 - Contextual Output Data
+**Learning:** When users copy data from an application (e.g., calculation results), providing only the output is often insufficient for later analysis. Users lose the context of the input parameters that generated the data, leading to confusion when reviewing pasted results later.
+**Action:** Always include the active input parameters (and their specific units) alongside the output data when providing "Copy to Clipboard" functionality in calculation or analysis tools.
