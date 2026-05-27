@@ -351,7 +351,19 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
             const statusText = isStable ? 'Stable' : 'Unstable';
             const color = isStable ? 'var(--accent-green)' : 'var(--accent-red)';
             const textColor = isStable ? 'var(--text-color)' : '#fff';
-            li.innerHTML = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)} <strong style="background-color: ${color}; color: ${textColor}; padding: 2px 5px; margin-left: 5px; border: 1px solid var(--border-color); font-size: 0.9em;">${statusText}</strong>`;
+
+            li.textContent = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)} `;
+
+            const strong = document.createElement('strong');
+            strong.textContent = statusText;
+            strong.style.backgroundColor = color;
+            strong.style.color = textColor;
+            strong.style.padding = '2px 5px';
+            strong.style.marginLeft = '5px';
+            strong.style.border = '1px solid var(--border-color)';
+            strong.style.fontSize = '0.9em';
+
+            li.appendChild(strong);
             lonList.appendChild(li);
         });
 
@@ -363,7 +375,19 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
             const statusText = isStable ? 'Stable' : 'Unstable';
             const color = isStable ? 'var(--accent-green)' : 'var(--accent-red)';
             const textColor = isStable ? 'var(--text-color)' : '#fff';
-            li.innerHTML = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)} <strong style="background-color: ${color}; color: ${textColor}; padding: 2px 5px; margin-left: 5px; border: 1px solid var(--border-color); font-size: 0.9em;">${statusText}</strong>`;
+
+            li.textContent = `Eval: ${m.real.toFixed(3)} ± ${Math.abs(m.imag).toFixed(3)}j | Wn: ${m.wn.toFixed(3)} | Zeta: ${m.zeta.toFixed(3)} `;
+
+            const strong = document.createElement('strong');
+            strong.textContent = statusText;
+            strong.style.backgroundColor = color;
+            strong.style.color = textColor;
+            strong.style.padding = '2px 5px';
+            strong.style.marginLeft = '5px';
+            strong.style.border = '1px solid var(--border-color)';
+            strong.style.fontSize = '0.9em';
+
+            li.appendChild(strong);
             latList.appendChild(li);
         });
 
