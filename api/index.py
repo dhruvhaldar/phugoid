@@ -44,6 +44,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
         if "chunked" in request.headers.get("transfer-encoding", "").lower():
             # If chunked encoding, we cannot determine content length beforehand,
             # so we reject it to avoid memory exhaustion DOS.
+            logger.warning(f"Security Event: Rejected chunked transfer encoding from {request.client.host if request.client else 'unknown'} on path {request.url.path}")
             return JSONResponse(status_code=411, content={"detail": "Length Required"})
 
         content_length = request.headers.get("content-length")
@@ -51,8 +52,10 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
             try:
                 length = int(content_length)
                 if length > 1048576:
+                    logger.warning(f"Security Event: Payload too large ({length} bytes) from {request.client.host if request.client else 'unknown'} on path {request.url.path}")
                     return JSONResponse(status_code=413, content={"detail": "Payload Too Large"})
             except ValueError:
+                logger.warning(f"Security Event: Invalid Content-Length header ('{content_length}') from {request.client.host if request.client else 'unknown'} on path {request.url.path}")
                 return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
 
         return await call_next(request)
@@ -88,6 +91,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if len(timestamps) >= 100:
             # Re-insert before returning
             request_counts[client_ip_hash] = timestamps
+            logger.warning(f"Security Event: Rate limit exceeded for IP {client_ip} on path {request.url.path}")
             return JSONResponse(status_code=429, content={"detail": "Too many requests. Please try again later."}, headers={"Retry-After": "60"})
 
         timestamps.append(now)
