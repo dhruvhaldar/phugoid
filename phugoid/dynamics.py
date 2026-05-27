@@ -145,21 +145,27 @@ def equations_of_motion(t, state, aircraft, control):
 
     # Aerodynamic Angles
     if is_scalar:
-        alpha = _atan2(w, u)
-        # Optimization: Use algebraic trig for alpha.
-        # Note: In 3D (v != 0), V = sqrt(u^2 + v^2 + w^2).
-        # The correct longitudinal velocity magnitude is V_lon = sqrt(u^2 + w^2).
-        # We can calculate inv_V_lon to avoid trig functions.
-        V_lon_sq = u*u + w*w
-        if V_lon_sq < 0.01:
-            s_alpha = _sin(alpha)
-            c_alpha = _cos(alpha)
+        # Optimization: Fast path for alpha when w=0 to avoid expensive _atan2 completely
+        if w == 0.0 and u > 0:
+            alpha = 0.0
+            s_alpha = 0.0
+            c_alpha = 1.0
         else:
-            # Optimization: Calculate inverse square root using 1.0 / math.sqrt()
-            # instead of ** -0.5 as it avoids underlying C pow() overhead, yielding measurable gains.
-            inv_V_lon = 1.0 / _sqrt(V_lon_sq)
-            s_alpha = w * inv_V_lon
-            c_alpha = u * inv_V_lon
+            alpha = _atan2(w, u)
+            # Optimization: Use algebraic trig for alpha.
+            # Note: In 3D (v != 0), V = sqrt(u^2 + v^2 + w^2).
+            # The correct longitudinal velocity magnitude is V_lon = sqrt(u^2 + w^2).
+            # We can calculate inv_V_lon to avoid trig functions.
+            V_lon_sq = u*u + w*w
+            if V_lon_sq < 0.01:
+                s_alpha = _sin(alpha)
+                c_alpha = _cos(alpha)
+            else:
+                # Optimization: Calculate inverse square root using 1.0 / math.sqrt()
+                # instead of ** -0.5 as it avoids underlying C pow() overhead, yielding measurable gains.
+                inv_V_lon = 1.0 / _sqrt(V_lon_sq)
+                s_alpha = w * inv_V_lon
+                c_alpha = u * inv_V_lon
     else:
         alpha = atan2(w, u)
         s_alpha = sin(alpha)
@@ -169,9 +175,13 @@ def equations_of_motion(t, state, aircraft, control):
     arg_beta = v * inv_V
 
     if is_scalar:
-        if arg_beta < -1.0: arg_beta = -1.0
-        elif arg_beta > 1.0: arg_beta = 1.0
-        beta = _asin(float(arg_beta))
+        # Optimization: Fast path for beta when v=0 to avoid _asin
+        if v == 0.0:
+            beta = 0.0
+        else:
+            if arg_beta < -1.0: arg_beta = -1.0
+            elif arg_beta > 1.0: arg_beta = 1.0
+            beta = _asin(float(arg_beta))
     else:
         beta = asin(np.clip(arg_beta, -1, 1))
 
@@ -412,13 +422,18 @@ def longitudinal_equations_of_motion(t, state, aircraft, control, rho=None):
         inv_V = 1.0 / _sqrt(V_sq)
 
     # Aerodynamic Angles
-    alpha = _atan2(w, u)
-
-    # Optimization: Use algebraic trig for alpha (avoids 2 trig calls)
-    # sin(alpha) = w/V, cos(alpha) = u/V
-    # V is already calculated and guarded against division by zero
-    s_alpha = w * inv_V
-    c_alpha = u * inv_V
+    # Optimization: Fast path for alpha when w=0 to avoid expensive _atan2 completely
+    if w == 0.0 and u > 0:
+        alpha = 0.0
+        s_alpha = 0.0
+        c_alpha = 1.0
+    else:
+        alpha = _atan2(w, u)
+        # Optimization: Use algebraic trig for alpha (avoids 2 trig calls)
+        # sin(alpha) = w/V, cos(alpha) = u/V
+        # V is already calculated and guarded against division by zero
+        s_alpha = w * inv_V
+        c_alpha = u * inv_V
 
     # Dynamic Pressure
     q_bar = 0.5 * rho * V_sq
