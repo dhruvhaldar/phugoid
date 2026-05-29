@@ -259,7 +259,7 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     const btn = document.getElementById('calculate-btn');
     if (btn && btn.getAttribute('aria-disabled') === 'true') return;
     const errorDiv = document.getElementById('error-message');
-    const originalText = btn.innerHTML;
+    const originalChildren = Array.from(btn.childNodes);
 
     // Reset state
     errorDiv.textContent = '';
@@ -269,7 +269,7 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     btn.setAttribute('title', 'Calculation in progress, please wait');
     btn.setAttribute('aria-busy', 'true');
     const shortcut = btn.querySelector('.kbd-shortcut');
-    btn.innerHTML = 'Calculating... ' + (shortcut ? shortcut.outerHTML : '');
+    btn.replaceChildren('Calculating... ', ...(shortcut ? [shortcut] : []));
 
     // Disable inputs and preset buttons during calculation
     const inputs = document.querySelectorAll('#flight-controls input');
@@ -344,7 +344,7 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
 
         // List Modes
         const lonList = document.getElementById('lon-modes');
-        lonList.innerHTML = '';
+        lonList.replaceChildren();
         analyzeData.longitudinal.forEach(m => {
             const li = document.createElement('li');
             const isStable = m.real <= 0;
@@ -368,7 +368,7 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         });
 
         const latList = document.getElementById('lat-modes');
-        latList.innerHTML = '';
+        latList.replaceChildren();
         analyzeData.lateral.forEach(m => {
             const li = document.createElement('li');
             const isStable = m.real <= 0;
@@ -427,7 +427,7 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
         btn.removeAttribute('aria-disabled');
         btn.removeAttribute('title');
         btn.removeAttribute('aria-busy');
-        btn.innerHTML = originalText;
+        btn.replaceChildren(...originalChildren);
 
         // Re-enable inputs
         inputs.forEach(input => input.disabled = false);
@@ -446,7 +446,7 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
 // Copy Trim Results
 const copyBtn = document.getElementById('copy-trim-btn');
 if (copyBtn) {
-    const originalHtml = copyBtn.innerHTML;
+    const originalChildren = Array.from(copyBtn.childNodes);
 
     copyBtn.addEventListener('click', async (e) => {
         if (copyBtn.getAttribute('aria-disabled') === 'true') {
@@ -479,18 +479,33 @@ Theta: ${theta} deg`;
             await navigator.clipboard.writeText(text);
 
             // Visual Feedback
-            copyBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <span class="btn-text">Copied!</span>
-            `;
+            // Visual Feedback
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("width", "16");
+            svg.setAttribute("height", "16");
+            svg.setAttribute("viewBox", "0 0 24 24");
+            svg.setAttribute("fill", "none");
+            svg.setAttribute("stroke", "currentColor");
+            svg.setAttribute("stroke-width", "2");
+            svg.setAttribute("stroke-linecap", "round");
+            svg.setAttribute("stroke-linejoin", "round");
+            svg.setAttribute("aria-hidden", "true");
+            const polyline = document.createElementNS(svgNS, "polyline");
+            polyline.setAttribute("points", "20 6 9 17 4 12");
+            svg.appendChild(polyline);
+
+            const span = document.createElement("span");
+            span.className = "btn-text";
+            span.textContent = "Copied!";
+
+            copyBtn.replaceChildren(svg, span);
             copyBtn.classList.add('success');
             copyBtn.setAttribute('aria-label', 'Copied to clipboard');
 
             // Revert after 2 seconds
             setTimeout(() => {
-                copyBtn.innerHTML = originalHtml;
+                copyBtn.replaceChildren(...originalChildren);
                 copyBtn.classList.remove('success');
                 copyBtn.setAttribute('aria-label', 'Copy trim results to clipboard');
             }, 2000);
