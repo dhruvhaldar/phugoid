@@ -84,10 +84,11 @@ class TrimSolver:
             inv_eps = 1.0 / eps
 
             # Inlined objective(alpha+eps)
-            theta = alpha + eps + flight_path_angle
-            u = velocity * _cos(alpha + eps)
-            w = velocity * _sin(alpha + eps)
-            state_tup_alpha = (u, 0.0, w, 0.0, 0.0, 0.0, 0.0, theta, 0.0, 0.0, 0.0, -altitude)
+            alpha_eps = alpha + eps
+            theta_eps = alpha_eps + flight_path_angle
+            u_eps = velocity * _cos(alpha_eps)
+            w_eps = velocity * _sin(alpha_eps)
+            state_tup_alpha = (u_eps, 0.0, w_eps, 0.0, 0.0, 0.0, 0.0, theta_eps, 0.0, 0.0, 0.0, -altitude)
             control_tup_alpha = (elevator, 0.0, 0.0, throttle)
             derivs0 = _leom(0, state_tup_alpha, _ac, control_tup_alpha, rho=rho_val)
             fp0_0, fp0_1, fp0_2 = derivs0[0], derivs0[2], derivs0[4]
