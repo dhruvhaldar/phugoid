@@ -12,3 +12,7 @@
 **Vulnerability:** The vanilla JavaScript frontend (`public/main.js`) used `.innerHTML` with string concatenation to render lists of dynamically fetched stability modes.
 **Learning:** Using `.innerHTML` when handling API responses (even numbers that appear safe) violates defense-in-depth and establishes dangerous patterns that can lead to Cross-Site Scripting (XSS).
 **Prevention:** Always use safe DOM manipulation methods (`document.createElement()`, `textContent`, and `.appendChild()`) for dynamically updating the DOM to eliminate arbitrary HTML injection vectors.
+## 2026-10-25 - [Security Enhancement] Enforce Cross-Origin Isolation via COEP
+**Vulnerability:** The application partially implemented Cross-Origin Isolation by setting `Cross-Origin-Opener-Policy: same-origin` but missed the `Cross-Origin-Embedder-Policy: require-corp` header. This left the application partially exposed to side-channel attacks (like Spectre) since the browser requires both headers to enable full cross-origin isolation.
+**Learning:** Full cross-origin isolation (which enables features like `SharedArrayBuffer` and mitigates side-channel attacks) requires a pair of headers: COOP and COEP. Implementing only one is insufficient.
+**Prevention:** When implementing security headers for cross-origin boundaries, ensure both COOP and COEP are verified together as part of the security header suite.
