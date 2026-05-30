@@ -64,6 +64,10 @@ class TrimSolver:
         # Calculate atmosphere once, as altitude is constant during root-finding
         _, _, rho_val = atmosphere_scalar(altitude)
 
+        # Pull these constants out to avoid lookups in the hot loop
+        _ac = self.aircraft
+        _leom = longitudinal_equations_of_motion
+
         def objective(alpha, elevator, throttle):
             theta = alpha + flight_path_angle
             u = velocity * _cos(alpha)
@@ -73,28 +77,32 @@ class TrimSolver:
             state_tup = (u, 0.0, w, 0.0, 0.0, 0.0, 0.0, theta, 0.0, 0.0, 0.0, -altitude)
             control_tup = (elevator, 0.0, 0.0, throttle)
 
-            derivs = longitudinal_equations_of_motion(0, state_tup, self.aircraft, control_tup, rho=rho_val)
-            return (derivs[0], derivs[2], derivs[4]), state_tup
+            derivs = _leom(0, state_tup, _ac, control_tup, rho=rho_val)
+            return derivs[0], derivs[2], derivs[4], state_tup
 
-        def objective_state(state_tup, elevator, throttle):
-            control_tup = (elevator, 0.0, 0.0, throttle)
-            derivs = longitudinal_equations_of_motion(0, state_tup, self.aircraft, control_tup, rho=rho_val)
-            return derivs[0], derivs[2], derivs[4]
-
-        def jacobian(alpha, elevator, throttle, f0, state_tup0, eps=1e-5):
+        def jacobian(alpha, elevator, throttle, f0_0, f0_1, f0_2, state_tup0, eps=1e-5):
             inv_eps = 1.0 / eps
 
-            f_plus0, _ = objective(alpha + eps, elevator, throttle)
-            f_plus1 = objective_state(state_tup0, elevator + eps, throttle)
-            f_plus2 = objective_state(state_tup0, elevator, throttle + eps)
+            # Inlined objective(alpha+eps)
+            theta = alpha + eps + flight_path_angle
+            u = velocity * _cos(alpha + eps)
+            w = velocity * _sin(alpha + eps)
+            state_tup_alpha = (u, 0.0, w, 0.0, 0.0, 0.0, 0.0, theta, 0.0, 0.0, 0.0, -altitude)
+            control_tup_alpha = (elevator, 0.0, 0.0, throttle)
+            derivs0 = _leom(0, state_tup_alpha, _ac, control_tup_alpha, rho=rho_val)
+            fp0_0, fp0_1, fp0_2 = derivs0[0], derivs0[2], derivs0[4]
 
-            # Optimization: Unpack f0 to avoid repeated index lookups
-            f0_0, f0_1, f0_2 = f0
-            fp0_0, fp0_1, fp0_2 = f_plus0
-            fp1_0, fp1_1, fp1_2 = f_plus1
-            fp2_0, fp2_1, fp2_2 = f_plus2
+            # Inlined objective_state (no alpha change, just elev)
+            control_tup_elev = (elevator + eps, 0.0, 0.0, throttle)
+            derivs1 = _leom(0, state_tup0, _ac, control_tup_elev, rho=rho_val)
+            fp1_0, fp1_1, fp1_2 = derivs1[0], derivs1[2], derivs1[4]
 
-            # Construct flat J for fast solve
+            # Inlined objective_state (no alpha change, just throttle)
+            control_tup_throt = (elevator, 0.0, 0.0, throttle + eps)
+            derivs2 = _leom(0, state_tup0, _ac, control_tup_throt, rho=rho_val)
+            fp2_0, fp2_1, fp2_2 = derivs2[0], derivs2[2], derivs2[4]
+
+            # Pack fast tuple directly
             J = (
                 (fp0_0 - f0_0) * inv_eps, (fp1_0 - f0_0) * inv_eps, (fp2_0 - f0_0) * inv_eps,
                 (fp0_1 - f0_1) * inv_eps, (fp1_1 - f0_1) * inv_eps, (fp2_1 - f0_1) * inv_eps,
@@ -110,17 +118,14 @@ class TrimSolver:
         success = False
 
         for i in range(max_iter):
-            f0, state_tup0 = objective(alpha, elevator, throttle)
-            # Optimization: Use explicit multiplication instead of **2 for performance
-            # Unpack to avoid multiple list lookups
-            f0_0, f0_1, f0_2 = f0
+            f0_0, f0_1, f0_2, state_tup0 = objective(alpha, elevator, throttle)
             error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
             
             if error < tol:
                 success = True
                 break
                 
-            J = jacobian(alpha, elevator, throttle, f0, state_tup0)
+            J = jacobian(alpha, elevator, throttle, f0_0, f0_1, f0_2, state_tup0)
             try:
                 # Solve J * dx = -f0
                 dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
@@ -139,16 +144,14 @@ class TrimSolver:
             # Try alternate guess
             alpha, elevator, throttle = 0.1, -0.1, 0.8
             for i in range(max_iter):
-                f0, state_tup0 = objective(alpha, elevator, throttle)
-                # Optimization: Use explicit multiplication instead of **2 for performance
-                f0_0, f0_1, f0_2 = f0
+                f0_0, f0_1, f0_2, state_tup0 = objective(alpha, elevator, throttle)
                 error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
                 
                 if error < tol:
                     success = True
                     break
                     
-                J = jacobian(alpha, elevator, throttle, f0, state_tup0)
+                J = jacobian(alpha, elevator, throttle, f0_0, f0_1, f0_2, state_tup0)
                 try:
                     dx0, dx1, dx2 = solve_3x3(J, (-f0_0, -f0_1, -f0_2))
                     alpha += 0.5 * dx0
@@ -159,6 +162,7 @@ class TrimSolver:
                     elif throttle > 1.0: throttle = 1.0
                 except SingularMatrixError:
                     break
+
                     
             if not success:
                 raise RuntimeError(f"Trim solver failed to converge. Final error: {error}")

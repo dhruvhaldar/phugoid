@@ -39,3 +39,11 @@
 ## 2026-05-18 - Avoid Expensive Trig with Fast Paths
 **Learning:** In highly mathematical hot loops like `equations_of_motion`, calling trig functions like `math.atan2` or `math.asin` takes measurable time. Since steady longitudinal flight calculations (`w` close to 0, or `v` close to 0) are very common (e.g. initial conditions in TrimSolver), we can add simple float comparison fast paths (`if w == 0.0 and u > 0.0`) to avoid trig function calls entirely, resulting in exactly zero aerodynamic angles. This reduces the base `equations_of_motion` time significantly when evaluating zero-state approximations.
 **Action:** Always check if complex, expensive mathematical operations like `math.atan2` can be completely bypassed using a simple `if` condition for the most common input scenarios (e.g. zero values).
+
+## 2026-05-20 - Preserving Code Readability During Optimization
+**Learning:** When applying multi-line code modifications using Python script string replacements (`replace()`), carefully ensure that crucial structural comments (e.g., section headers like `# Accelerations`) are explicitly preserved in the replacement string to prevent accidental deletion and degradation of code readability.
+**Action:** Always include the original formatting and inline documentation in replacement blocks unless explicitly refactoring the documentation itself.
+
+## 2026-05-20 - Folding Gravity in EOM
+**Learning:** In aerodynamic equations of motion, mathematically folding gravity calculations directly into the final linear acceleration integration step (e.g., `udot = Fx * inv_m - g * s_th`) rather than calculating intermediate body-frame gravity forces (`Gx = -m * g * s_th`) eliminates redundant mass and inverse-mass multiplications, measurably improving performance in hot loops.
+**Action:** When working with equations of motion or similar physics simulations, simplify algebraic equations mathematically before implementation to eliminate unnecessary operations (like multiplying by mass only to immediately divide by it).

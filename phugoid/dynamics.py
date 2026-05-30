@@ -354,17 +354,6 @@ def longitudinal_equations_of_motion(t, state, aircraft, control, rho=None):
     Returns full state derivative list with zeros for lateral components.
     Used by TrimSolver for ~2x performance.
     """
-    # Optimized imports for scalar path
-    # sin = math.sin
-    # cos = math.cos
-    # atan2 = math.atan2
-    # sqrt = math.sqrt
-
-    # Unpack state (u, w, q, theta, z are relevant)
-    # Optimization: Direct index access is faster than sequence unpacking for numpy arrays and avoids unused variables.
-    # Using explicit float() casting avoids redundant type-checking overhead and ensures fast scalar instantiation
-    # for C-level math operations, supporting both native lists and NumPy arrays efficiently.
-    # Fast path: sequence assignment is faster for tuple/list than index + float()
     if type(state) is tuple or type(state) is list:
         u, _, w, _, q, _, _, theta, _, _, _, z = state
         delta_e, _, _, throttle = control
@@ -378,17 +367,8 @@ def longitudinal_equations_of_motion(t, state, aircraft, control, rho=None):
         delta_e = float(control[0])
         throttle = float(control[3])
 
-    # Constants
-    g = 9.80665
-    m = aircraft.mass
-    S = aircraft.S
-    c = aircraft.c
-    Iyy = aircraft.Iyy
-
     # Atmosphere
-    # Assume scalar input since this is optimized for TrimSolver
     if rho is None:
-        # Optimization: Inlined atmosphere calculation (same as above)
         h_val = -z
         T0 = 288.15
         P0 = 101325.0
@@ -407,41 +387,31 @@ def longitudinal_equations_of_motion(t, state, aircraft, control, rho=None):
 
         T = T0 - L_lapse * h_clamped
         base_atm = 1.0 - BASE_FACTOR * h_clamped
-        # Optimization: Use ** instead of math.pow for scalar floating-point exponentiation
-        # as benchmarking shows it has lower overhead in this specific context.
         P = P0 * (base_atm ** EXPONENT)
         rho = P / (R_gas * T)
 
     # Airspeed
     V_sq = u*u + w*w
-    # Avoid division by zero
     if V_sq < 0.01:
         V_sq = 0.01
-        inv_V = 10.0 # 1.0 / 0.1
+        inv_V = 10.0
     else:
         inv_V = 1.0 / _sqrt(V_sq)
 
     # Aerodynamic Angles
-    # Optimization: Fast path for alpha when w=0 to avoid expensive _atan2 completely
     if w == 0.0 and u > 0:
         alpha = 0.0
         s_alpha = 0.0
         c_alpha = 1.0
     else:
         alpha = _atan2(w, u)
-        # Optimization: Use algebraic trig for alpha (avoids 2 trig calls)
-        # sin(alpha) = w/V, cos(alpha) = u/V
-        # V is already calculated and guarded against division by zero
         s_alpha = w * inv_V
         c_alpha = u * inv_V
 
-    # Dynamic Pressure
-    q_bar = 0.5 * rho * V_sq
-    q_bar_S = q_bar * S
-
-    # Normalized q
-    inv_2V = 0.5 * inv_V
-    q_norm = q * c * inv_2V
+    # Dynamic Pressure & Common terms
+    # Combining constants and eliminating redundant intermediate variables
+    q_bar_S = 0.5 * rho * V_sq * aircraft.S
+    q_norm = q * aircraft.c * 0.5 * inv_V
 
     # Aerodynamic Coefficients (Longitudinal)
     CL = aircraft.CL0 + aircraft.CL_alpha * alpha + aircraft.CL_q * q_norm + aircraft.CL_de * delta_e
@@ -449,52 +419,33 @@ def longitudinal_equations_of_motion(t, state, aircraft, control, rho=None):
     Cm = aircraft.Cm0 + aircraft.Cm_alpha * alpha + aircraft.Cm_q * q_norm + aircraft.Cm_de * delta_e
 
     # Forces in Body Frame
-    # Fx_aero = -D cos(alpha) + L sin(alpha)
-    # Fz_aero = -D sin(alpha) - L cos(alpha)
-    Fx_aero = q_bar_S * (-CD * c_alpha + CL * s_alpha)
+    Fx_aero = q_bar_S * (CL * s_alpha - CD * c_alpha)
     Fz_aero = q_bar_S * (-CD * s_alpha - CL * c_alpha)
 
-    # Pitching Moment
-    # Optimization: Pre-calculate q_bar_S * c to avoid redundant multiplications
-    q_bar_S_c = q_bar_S * c
-    M_moment = q_bar_S_c * Cm
-
     # Thrust
-    Thrust = throttle * 2000.0 * (rho / 1.225)
-
-    Fx = Fx_aero + Thrust
-    Fz = Fz_aero
+    Fx = Fx_aero + throttle * 2000.0 * (rho / 1.225)
 
     # Gravity (phi=0)
     s_th = _sin(theta)
     c_th = _cos(theta)
 
-    # Optimization: Pre-calculate m * g to avoid redundant multiplications
-    mg = m * g
-    Gx = -mg * s_th
-    Gz = mg * c_th
+    inv_m = aircraft.inv_mass
+    g = 9.80665
 
     # Accelerations
-    # udot = Fx/m - qw
-    inv_m = aircraft.inv_mass
-    udot = (Fx + Gx) * inv_m - q*w
+    # Fold gravity into the equations directly
+    udot = Fx * inv_m - g * s_th - q*w
+    wdot = Fz_aero * inv_m + g * c_th + q*u
 
-    # wdot = Fz/m + qu
-    wdot = (Fz + Gz) * inv_m + q*u
-
-    # qdot = M/Iyy
-    qdot = M_moment * aircraft.inv_Iyy
+    # Pitching Moment
+    qdot = q_bar_S * aircraft.c * Cm * aircraft.inv_Iyy
 
     # Kinematics
-    # theta_dot = q (since phi=0)
     theta_dot = q
 
     # Navigation (NED)
-    # x_dot = c_th * u + s_th * w (since psi=0)
     x_dot = c_th * u + s_th * w
-    # z_dot = -s_th * u + c_th * w
     z_dot = -s_th * u + c_th * w
 
     # Return tuple compatible with full state
-    # (udot, vdot, wdot, pdot, qdot, rdot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, z_dot)
     return (udot, 0.0, wdot, 0.0, qdot, 0.0, 0.0, theta_dot, 0.0, x_dot, 0.0, z_dot)
