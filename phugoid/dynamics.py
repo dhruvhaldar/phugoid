@@ -241,27 +241,15 @@ def equations_of_motion(t, state, aircraft, control):
     Fy = Fy_aero
     Fz = Fz_aero
 
-    # Gravity in Body Frame
-    # Optimization: Pre-calculate m * g to avoid redundant multiplications
-    mg = m * g
-    Gx = -mg * s_th
-    Gy = mg * c_th * s_ph
-    Gz = mg * c_th * c_ph
-
-    # Total Forces
-    Fx_total = Fx + Gx
-    Fy_total = Fy + Gy
-    Fz_total = Fz + Gz
-
     # Equations of Motion
 
     # Linear Acceleration
-    # m(u_dot + qw - rv) = Fx
-    # Optimization: Use precalculated inverse mass to avoid division
+    # Optimization: Fold gravity to avoid multiplying m*g to immediately divide by m
+    # m(u_dot + qw - rv) = Fx + Gx  =>  u_dot = Fx/m + Gx/m - (qw - rv) = Fx/m - g*sin(theta) - (qw - rv)
     inv_m = aircraft.inv_mass
-    udot = Fx_total * inv_m - (q*w - r*v)
-    vdot = Fy_total * inv_m - (r*u - p*w)
-    wdot = Fz_total * inv_m - (p*v - q*u)
+    udot = Fx * inv_m - g * s_th - (q*w - r*v)
+    vdot = Fy * inv_m + g * c_th * s_ph - (r*u - p*w)
+    wdot = Fz * inv_m + g * c_th * c_ph - (p*v - q*u)
 
     # Angular Acceleration
     # I * omega_dot + omega x (I * omega) = Moments

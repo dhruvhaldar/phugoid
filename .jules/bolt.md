@@ -47,3 +47,6 @@
 ## 2026-05-20 - Folding Gravity in EOM
 **Learning:** In aerodynamic equations of motion, mathematically folding gravity calculations directly into the final linear acceleration integration step (e.g., `udot = Fx * inv_m - g * s_th`) rather than calculating intermediate body-frame gravity forces (`Gx = -m * g * s_th`) eliminates redundant mass and inverse-mass multiplications, measurably improving performance in hot loops.
 **Action:** When working with equations of motion or similar physics simulations, simplify algebraic equations mathematically before implementation to eliminate unnecessary operations (like multiplying by mass only to immediately divide by it).
+## 2026-05-30 - Fold gravity directly into linear acceleration equations
+**Learning:** In aerodynamic equations of motion, mathematically folding gravity calculations directly into the final linear acceleration integration step (e.g., `udot = Fx * inv_m - g * s_th`) rather than calculating intermediate body-frame gravity forces (`Gx = -m * g * s_th`) eliminates redundant mass and inverse-mass multiplications, measurably improving performance in hot loops.
+**Action:** When working with equations of motion or similar physics simulations, simplify algebraic equations mathematically before implementation to eliminate unnecessary operations (like multiplying by mass only to immediately divide by it).
