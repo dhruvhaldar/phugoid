@@ -54,3 +54,7 @@
 ## 2026-06-05 - Stopping When the Codebase is Fully Optimized
 **Learning:** After extensively profiling and applying micro-optimizations (like avoiding `_sqrt` in the solver error calculation, modifying Jacobian state passing, or changing tuple arguments in `solve_3x3`), benchmarking revealed that the base algorithms (already utilizing math aliases, explicit determinant inversion, flat tuples, precalculated coefficients, and zero-state fast-paths) had reached the limits of Python interpreter overhead for this task. Further modifications to the existing numerical loops actually resulted in performance degradation due to added interpreter complexity.
 **Action:** When tasked with finding performance improvements, if thorough profiling and benchmarking confirm that the codebase is already highly optimized and further micro-optimizations yield no measurable gain or slow down execution, adhere strictly to the boundary: stop, document the findings, and do not create a Pull Request.
+
+## 2026-06-05 - [Micro-optimization of abs(alpha)]
+**Learning:** In the `dynamics.py` equations of motion, replacing `abs(alpha)` with an inline conditional (`alpha if alpha >= 0.0 else -alpha`) yields unmeasurably small macro-performance gains in the overall solver loops (like `TrimSolver`). The overhead of the python function call for `abs()` is negligible compared to the rest of the mathematical operations in the block.
+**Action:** Do not sacrifice code readability for unmeasurable micro-optimizations in aerodynamic polar equations.
