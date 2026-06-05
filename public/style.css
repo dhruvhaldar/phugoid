@@ -170,12 +170,12 @@ button {
     display: inline-block;
 }
 
-button:hover {
+button:not([aria-disabled="true"]):hover {
     transform: translate(4px, 4px);
     box-shadow: var(--shadow-solid-hover);
 }
 
-button:active {
+button:not([aria-disabled="true"]):active {
     transform: translate(6px, 6px);
     box-shadow: var(--shadow-solid-active);
 }
@@ -355,7 +355,7 @@ input:invalid {
     box-shadow: 4px 4px 0px 0px #111;
 }
 
-.preset-btn:hover {
+.preset-btn:not([aria-disabled="true"]):hover {
     background-color: #f0f0f0;
 }
 
@@ -393,7 +393,7 @@ input:invalid {
     font-weight: bold;
 }
 
-.icon-btn:hover {
+.icon-btn:not([aria-disabled="true"]):hover {
     background-color: #f0f0f0;
 }
 
@@ -655,7 +655,7 @@ input:invalid ~ .help-text::before {
     transition: opacity 0.2s ease;
 }
 
-.unit-toggle-label:hover {
+.unit-toggle-label:not([aria-disabled="true"]):hover {
     opacity: 0.7;
 }
 
