@@ -67,3 +67,7 @@
 ## 2026-11-29 - Contextual Output Data
 **Learning:** When users copy data from an application (e.g., calculation results), providing only the output is often insufficient for later analysis. Users lose the context of the input parameters that generated the data, leading to confusion when reviewing pasted results later.
 **Action:** Always include the active input parameters (and their specific units) alongside the output data when providing "Copy to Clipboard" functionality in calculation or analysis tools.
+
+## 2026-11-30 - Proxied Async Buttons
+**Learning:** When a button (like "Quick Start") acts as a proxy to trigger a form submission located elsewhere on the page, failing to reflect the async loading state on the proxy button itself leaves the user without immediate feedback at their point of focus, leading to double-clicks.
+**Action:** Always synchronize the disabled and loading states of proxy trigger buttons with the primary form's submission state to ensure the user receives immediate feedback exactly where they interacted.
