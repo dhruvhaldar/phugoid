@@ -285,6 +285,19 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
     const unitLabels = document.querySelectorAll('.unit-toggle-label');
     unitLabels.forEach(label => label.setAttribute('aria-disabled', 'true'));
 
+    // Disable Quick Start button if visible
+    const quickStartBtnEl = document.getElementById('quick-start-btn');
+    if (quickStartBtnEl && !document.getElementById('empty-state').classList.contains('hidden')) {
+        quickStartBtnEl.setAttribute('aria-disabled', 'true');
+        quickStartBtnEl.setAttribute('title', 'Calculation in progress');
+        quickStartBtnEl.classList.add('loading');
+        const qsText = quickStartBtnEl.querySelector('.btn-text');
+        if (qsText) {
+            quickStartBtnEl.dataset.originalText = qsText.textContent;
+            qsText.textContent = 'Running...';
+        }
+    }
+
     try {
         let velocity = parseFloat(document.getElementById('velocity').value);
         let altitude = parseFloat(document.getElementById('altitude').value);
@@ -440,6 +453,18 @@ document.getElementById('flight-controls').addEventListener('submit', async (e) 
 
         // Re-enable unit toggle pseudo-labels
         unitLabels.forEach(label => label.removeAttribute('aria-disabled'));
+
+        // Re-enable Quick Start button
+        const quickStartBtnEl = document.getElementById('quick-start-btn');
+        if (quickStartBtnEl) {
+            quickStartBtnEl.removeAttribute('aria-disabled');
+            quickStartBtnEl.removeAttribute('title');
+            quickStartBtnEl.classList.remove('loading');
+            const qsText = quickStartBtnEl.querySelector('.btn-text');
+            if (qsText && quickStartBtnEl.dataset.originalText) {
+                qsText.textContent = quickStartBtnEl.dataset.originalText;
+            }
+        }
     }
 });
 
@@ -541,6 +566,7 @@ document.addEventListener('wheel', function() {
 const quickStartBtn = document.getElementById('quick-start-btn');
 if (quickStartBtn) {
     quickStartBtn.addEventListener('click', () => {
+        if (quickStartBtn.getAttribute('aria-disabled') === 'true') return;
         // Trigger the first preset
         if (presetBtns.length > 0) {
             presetBtns[0].click();
