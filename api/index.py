@@ -142,9 +142,18 @@ class SecureHeadersMiddleware(BaseHTTPMiddleware):
 
         return response
 
-app.add_middleware(RateLimitMiddleware)
+
+# RequestSizeLimitMiddleware is the innermost custom middleware
 app.add_middleware(RequestSizeLimitMiddleware)
+
+# RateLimitMiddleware wraps RequestSizeLimitMiddleware so that if a payload
+# is rejected early (e.g. 413 or 411), the request still counts towards the IP's rate limit.
+app.add_middleware(RateLimitMiddleware)
+
+# SecureHeadersMiddleware wraps both, ensuring security headers are set on all responses,
+# including 429 Too Many Requests and 413 Payload Too Large.
 app.add_middleware(SecureHeadersMiddleware)
+
 
 # Security Enhancement: CORSMiddleware is added LAST so it becomes the outermost
 # middleware (wrapping all others). This ensures CORS headers are correctly applied

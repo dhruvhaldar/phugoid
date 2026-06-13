@@ -12,7 +12,13 @@
 **Vulnerability:** The vanilla JavaScript frontend (`public/main.js`) used `.innerHTML` with string concatenation to render lists of dynamically fetched stability modes.
 **Learning:** Using `.innerHTML` when handling API responses (even numbers that appear safe) violates defense-in-depth and establishes dangerous patterns that can lead to Cross-Site Scripting (XSS).
 **Prevention:** Always use safe DOM manipulation methods (`document.createElement()`, `textContent`, and `.appendChild()`) for dynamically updating the DOM to eliminate arbitrary HTML injection vectors.
+
 ## 2026-10-25 - [Security Enhancement] Enforce Cross-Origin Isolation via COEP
 **Vulnerability:** The application partially implemented Cross-Origin Isolation by setting `Cross-Origin-Opener-Policy: same-origin` but missed the `Cross-Origin-Embedder-Policy: require-corp` header. This left the application partially exposed to side-channel attacks (like Spectre) since the browser requires both headers to enable full cross-origin isolation.
 **Learning:** Full cross-origin isolation (which enables features like `SharedArrayBuffer` and mitigates side-channel attacks) requires a pair of headers: COOP and COEP. Implementing only one is insufficient.
 **Prevention:** When implementing security headers for cross-origin boundaries, ensure both COOP and COEP are verified together as part of the security header suite.
+
+## 2026-10-26 - [High] Fix Rate Limiting Bypass via Payload Size Rejection
+**Vulnerability:** The order of middlewares in `api/index.py` caused `RequestSizeLimitMiddleware` to run *before* `RateLimitMiddleware`. Consequently, if an attacker sent requests with oversized payloads (triggering a 413 response) or chunked transfer encoding (triggering a 411 response), the request was rejected early and never reached the rate limiter. This allowed an attacker to infinitely spam the server with oversized requests without being rate limited, causing excessive CPU usage and Disk Exhaustion (DoS via log forging).
+**Learning:** In FastAPI, `app.add_middleware()` executes custom middlewares in reverse order of addition. Security controls must be layered such that defensive mechanisms like rate limiters run as early as possible in the request pipeline.
+**Prevention:** Always order `app.add_middleware()` calls so that `RateLimitMiddleware` wraps inner size/content limiters, ensuring early rejections are still counted against an IP's rate limit.
