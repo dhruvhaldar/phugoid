@@ -659,11 +659,7 @@ input:invalid ~ .help-text::before {
     opacity: 0.7;
 }
 
-.unit-toggle-label:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--text-color);
-    border-radius: 2px;
-}
+
 
 .switch {
   --input-focus: var(--accent-blue);
