@@ -154,13 +154,6 @@ if (unitToggle) {
             if (labelMetric.getAttribute('aria-disabled') === 'true') return;
             setToggleState(false);
         });
-        labelMetric.addEventListener('keydown', (e) => {
-            if (labelMetric.getAttribute('aria-disabled') === 'true') return;
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setToggleState(false);
-            }
-        });
     }
 
     if (labelImperial) {
@@ -168,19 +161,10 @@ if (unitToggle) {
             if (labelImperial.getAttribute('aria-disabled') === 'true') return;
             setToggleState(true);
         });
-        labelImperial.addEventListener('keydown', (e) => {
-            if (labelImperial.getAttribute('aria-disabled') === 'true') return;
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setToggleState(true);
-            }
-        });
     }
 
     unitToggle.addEventListener('change', () => {
         const isImperial = unitToggle.checked;
-        if (labelMetric) labelMetric.setAttribute('aria-pressed', !isImperial);
-        if (labelImperial) labelImperial.setAttribute('aria-pressed', isImperial);
 
         const velocityLabel = document.querySelector('label[for="velocity"]');
         const altitudeLabel = document.querySelector('label[for="altitude"]');
