@@ -118,11 +118,12 @@ class TrimSolver:
         tol = 1e-8
         success = False
 
+        tol_sq = tol * tol
         for i in range(max_iter):
             f0_0, f0_1, f0_2, state_tup0 = objective(alpha, elevator, throttle)
-            error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
-            
-            if error < tol:
+            # Optimization: avoid _sqrt during error check for speed
+            # error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
+            if (f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2) < tol_sq:
                 success = True
                 break
                 
@@ -146,9 +147,8 @@ class TrimSolver:
             alpha, elevator, throttle = 0.1, -0.1, 0.8
             for i in range(max_iter):
                 f0_0, f0_1, f0_2, state_tup0 = objective(alpha, elevator, throttle)
-                error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
-                
-                if error < tol:
+                # Optimization: avoid _sqrt during error check for speed
+                if (f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2) < tol_sq:
                     success = True
                     break
                     
@@ -166,6 +166,7 @@ class TrimSolver:
 
                     
             if not success:
+                error = _sqrt(f0_0*f0_0 + f0_1*f0_1 + f0_2*f0_2)
                 raise RuntimeError(f"Trim solver failed to converge. Final error: {error}")
 
         alpha_trim, elevator_trim, throttle_trim = alpha, elevator, throttle
