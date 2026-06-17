@@ -22,3 +22,8 @@
 **Vulnerability:** The order of middlewares in `api/index.py` caused `RequestSizeLimitMiddleware` to run *before* `RateLimitMiddleware`. Consequently, if an attacker sent requests with oversized payloads (triggering a 413 response) or chunked transfer encoding (triggering a 411 response), the request was rejected early and never reached the rate limiter. This allowed an attacker to infinitely spam the server with oversized requests without being rate limited, causing excessive CPU usage and Disk Exhaustion (DoS via log forging).
 **Learning:** In FastAPI, `app.add_middleware()` executes custom middlewares in reverse order of addition. Security controls must be layered such that defensive mechanisms like rate limiters run as early as possible in the request pipeline.
 **Prevention:** Always order `app.add_middleware()` calls so that `RateLimitMiddleware` wraps inner size/content limiters, ensuring early rejections are still counted against an IP's rate limit.
+
+## 2026-10-26 - [Medium] Fix Log Forging vulnerability
+**Vulnerability:** The API middlewares (`RequestSizeLimitMiddleware` and `RateLimitMiddleware`) logged the requested path (`request.url.path`) directly into the logs without escaping newline characters when rejecting bad payloads or rate limiting requests.
+**Learning:** An attacker can send malicious requests containing CRLF characters in the path, allowing them to forge fake log entries (Log Forging / CRLF Injection).
+**Prevention:** Always sanitize user-controlled data before logging it. Wrapping the variable in `repr(str(...))` effectively escapes control characters (like `\n` and `\r`) before they are written to the log.
