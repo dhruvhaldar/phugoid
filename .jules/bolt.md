@@ -58,3 +58,6 @@
 ## 2026-06-05 - [Micro-optimization of abs(alpha)]
 **Learning:** In the `dynamics.py` equations of motion, replacing `abs(alpha)` with an inline conditional (`alpha if alpha >= 0.0 else -alpha`) yields unmeasurably small macro-performance gains in the overall solver loops (like `TrimSolver`). The overhead of the python function call for `abs()` is negligible compared to the rest of the mathematical operations in the block.
 **Action:** Do not sacrifice code readability for unmeasurable micro-optimizations in aerodynamic polar equations.
+## 2025-02-28 - [Squared Tolerance Check in TrimSolver]
+**Learning:** In the numerical TrimSolver (Newton-Raphson), computing `_sqrt(error_sum)` on every iteration just to check against the threshold `tol` adds unnecessary overhead in a tight loop.
+**Action:** Pre-calculate `tol_sq = tol * tol` before the loop and compare the squared sum of errors directly against `tol_sq` to skip the square root evaluation.
