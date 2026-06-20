@@ -114,17 +114,19 @@ class Linearizer:
     def get_longitudinal_matrices(self):
         # Extract indices for u, w, q, theta
         # u=0, w=2, q=4, theta=7
-        indices = [0, 2, 4, 7]
+        # Optimization: Use tuples instead of lists for np.ix_ to avoid list instantiation and conversion overhead
+        indices = (0, 2, 4, 7)
         A_lon = self.A[np.ix_(indices, indices)]
-        B_lon = self.B[np.ix_(indices, [0, 3])] # Elevator, Throttle
+        B_lon = self.B[np.ix_(indices, (0, 3))] # Elevator, Throttle
         return A_lon, B_lon
 
     def get_lateral_matrices(self):
         # Extract indices for v, p, r, phi
         # v=1, p=3, r=5, phi=6
-        indices = [1, 3, 5, 6]
+        # Optimization: Use tuples instead of lists for np.ix_ to avoid list instantiation and conversion overhead
+        indices = (1, 3, 5, 6)
         A_lat = self.A[np.ix_(indices, indices)]
-        B_lat = self.B[np.ix_(indices, [1, 2])] # Aileron, Rudder
+        B_lat = self.B[np.ix_(indices, (1, 2))] # Aileron, Rudder
         return A_lat, B_lat
 
     def get_longitudinal_modes(self):

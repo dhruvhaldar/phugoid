@@ -61,3 +61,7 @@
 ## 2025-02-28 - [Squared Tolerance Check in TrimSolver]
 **Learning:** In the numerical TrimSolver (Newton-Raphson), computing `_sqrt(error_sum)` on every iteration just to check against the threshold `tol` adds unnecessary overhead in a tight loop.
 **Action:** Pre-calculate `tol_sq = tol * tol` before the loop and compare the squared sum of errors directly against `tol_sq` to skip the square root evaluation.
+
+## 2024-05-18 - Tuple Indexing for NumPy
+**Learning:** In NumPy, specifically when using `np.ix_` inside high-frequency execution paths (like calculating Jacobians across many states), passing lists (e.g., `[0, 2, 4, 7]`) causes measurable overhead due to list instantiation and runtime conversion. Using native immutable tuples (e.g., `(0, 2, 4, 7)`) eliminates this overhead.
+**Action:** When extracting sub-matrices in hot loops, always use tuples instead of lists for index arrays with `np.ix_`.
