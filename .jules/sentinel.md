@@ -27,3 +27,8 @@
 **Vulnerability:** The API middlewares (`RequestSizeLimitMiddleware` and `RateLimitMiddleware`) logged the requested path (`request.url.path`) directly into the logs without escaping newline characters when rejecting bad payloads or rate limiting requests.
 **Learning:** An attacker can send malicious requests containing CRLF characters in the path, allowing them to forge fake log entries (Log Forging / CRLF Injection).
 **Prevention:** Always sanitize user-controlled data before logging it. Wrapping the variable in `repr(str(...))` effectively escapes control characters (like `\n` and `\r`) before they are written to the log.
+
+## 2026-10-26 - [Medium] Fix incomplete Log Forging prevention
+**Vulnerability:** While `request.url.path` was previously sanitized with `repr(str())` to prevent CRLF injection, other user-controlled data such as `request.headers.get("content-length")` and `client_ip` (extracted from `X-Forwarded-For`) were still being logged directly via f-strings.
+**Learning:** Any data extracted from HTTP requests (headers, query parameters, IP addresses) can be spoofed or manipulated by an attacker to include control characters like `\n` or `\r`. Fixing one log variable is insufficient if others remain unprotected.
+**Prevention:** Always apply consistent sanitization (e.g., `repr(str(...))`) to ALL variables containing client-provided data before passing them to logging functions.
