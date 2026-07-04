@@ -272,17 +272,15 @@ button:focus-visible {
 
 .error-message {
     color: var(--text-color);
+    font-weight: bold;
+}
+
+.error-message:not(:empty) {
     background-color: var(--accent-red);
     border: var(--border-width) solid var(--border-color);
     box-shadow: 4px 4px 0px 0px #111;
     padding: 15px;
     margin-bottom: 20px;
-    font-weight: bold;
-    display: none;
-}
-
-.error-message:not(:empty) {
-    display: block;
 }
 
 button.loading {
