@@ -71,3 +71,7 @@
 ## 2026-11-30 - Proxied Async Buttons
 **Learning:** When a button (like "Quick Start") acts as a proxy to trigger a form submission located elsewhere on the page, failing to reflect the async loading state on the proxy button itself leaves the user without immediate feedback at their point of focus, leading to double-clicks.
 **Action:** Always synchronize the disabled and loading states of proxy trigger buttons with the primary form's submission state to ensure the user receives immediate feedback exactly where they interacted.
+
+## 2026-12-01 - ARIA Live Regions and Display None
+**Learning:** Applying `display: none` to ARIA live regions (like `.error-message[role="alert"]`) removes them from the accessibility tree. Screen readers may fail to announce their contents when they transition to `display: block`, as the element itself is seen as newly inserted rather than an updated live region.
+**Action:** Instead of using `display: none`, leave the element in the DOM at all times. Conditionally apply visual styling (padding, backgrounds, borders) only when the element has content using the `:not(:empty)` CSS pseudo-class.
