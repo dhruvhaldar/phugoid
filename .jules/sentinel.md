@@ -32,3 +32,8 @@
 **Vulnerability:** While `request.url.path` was previously sanitized with `repr(str())` to prevent CRLF injection, other user-controlled data such as `request.headers.get("content-length")` and `client_ip` (extracted from `X-Forwarded-For`) were still being logged directly via f-strings.
 **Learning:** Any data extracted from HTTP requests (headers, query parameters, IP addresses) can be spoofed or manipulated by an attacker to include control characters like `\n` or `\r`. Fixing one log variable is insufficient if others remain unprotected.
 **Prevention:** Always apply consistent sanitization (e.g., `repr(str(...))`) to ALL variables containing client-provided data before passing them to logging functions.
+
+## 2026-10-26 - [Medium] Missing Logging for Validation Errors
+**Vulnerability:** The application was not logging `RequestValidationError` exceptions, silently dropping invalid payloads and malformed data without creating an audit trail.
+**Learning:** Request validation errors are often the first sign of an attacker probing the API surface, fuzzing endpoints, or attempting payload-based attacks. Silently dropping these requests without logging creates a lack of observability and prevents security monitoring tools from detecting malicious activity.
+**Prevention:** Always log request validation failures (e.g., using `logger.warning`) as Security Events, ensuring that relevant context like the client IP and requested path are included and properly sanitized to prevent log forging.

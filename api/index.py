@@ -25,6 +25,15 @@ logger = logging.getLogger(__name__)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Log the validation error as a security event for observability against probing/fuzzing
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        client_ip = forwarded.split(",")[-1].strip()
+    else:
+        client_ip = request.client.host if request.client else "unknown"
+
+    logger.warning(f"Security Event: Request validation failed for IP {repr(str(client_ip))} on path {repr(str(request.url.path))}")
+
     # Avoid RecursionError for deeply nested payload DoS vectors
     errors = exc.errors()
     for error in errors:
