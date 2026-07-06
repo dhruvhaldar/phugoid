@@ -93,21 +93,47 @@ class TrimSolver:
             derivs0 = _leom(0, state_tup_alpha, _ac, control_tup_alpha, rho=rho_val)
             fp0_0, fp0_1, fp0_2 = derivs0[0], derivs0[2], derivs0[4]
 
-            # Inlined objective_state (no alpha change, just elev)
-            control_tup_elev = (elevator + eps, 0.0, 0.0, throttle)
-            derivs1 = _leom(0, state_tup0, _ac, control_tup_elev, rho=rho_val)
-            fp1_0, fp1_1, fp1_2 = derivs1[0], derivs1[2], derivs1[4]
+            # Optimization: Use analytical derivatives for elevator and throttle
+            # Both are linear in the longitudinal equations of motion.
+            # This avoids 2 expensive calls to _leom per jacobian evaluation.
 
-            # Inlined objective_state (no alpha change, just throttle)
-            control_tup_throt = (elevator, 0.0, 0.0, throttle + eps)
-            derivs2 = _leom(0, state_tup0, _ac, control_tup_throt, rho=rho_val)
-            fp2_0, fp2_1, fp2_2 = derivs2[0], derivs2[2], derivs2[4]
+            # Elevator analytical derivatives
+            V_sq = state_tup0[0]*state_tup0[0] + state_tup0[2]*state_tup0[2]
+            if V_sq < 0.01:
+                V_sq = 0.01
+                inv_V = 10.0
+            else:
+                inv_V = 1.0 / _sqrt(V_sq)
+
+            s_alpha = state_tup0[2] * inv_V
+            c_alpha = state_tup0[0] * inv_V
+
+            q_bar_S = 0.5 * rho_val * V_sq * _ac.S
+            inv_m = _ac.inv_mass
+
+            # Analytical partial derivatives with respect to elevator deflection (delta_e):
+            # d(udot)/de = q_bar_S / m * (CL_de * sin(alpha) - CD_de * cos(alpha))
+            # d(wdot)/de = q_bar_S / m * (-CL_de * cos(alpha) - CD_de * sin(alpha))
+            # d(qdot)/de = q_bar_S * c * Cm_de / Iyy
+            # Note: For this aerodynamic model, CD_alpha exists but CD_de is not explicitly modeled (CD_de = 0).
+            # The simplified equations in longitudinal_equations_of_motion use CD = CD0 + CD_alpha * abs(alpha),
+            # so CD does not change with delta_e.
+
+            j_elev_0 = q_bar_S * _ac.CL_de * s_alpha * inv_m
+            j_elev_1 = -q_bar_S * _ac.CL_de * c_alpha * inv_m
+            j_elev_2 = q_bar_S * _ac.c * _ac.Cm_de * _ac.inv_Iyy
+
+            # Throttle analytical derivatives
+            # d(udot)/dth = 2000.0 * (rho / 1.225) / m
+            j_throt_0 = 2000.0 * (rho_val / 1.225) * inv_m
+            j_throt_1 = 0.0
+            j_throt_2 = 0.0
 
             # Pack fast tuple directly
             J = (
-                (fp0_0 - f0_0) * inv_eps, (fp1_0 - f0_0) * inv_eps, (fp2_0 - f0_0) * inv_eps,
-                (fp0_1 - f0_1) * inv_eps, (fp1_1 - f0_1) * inv_eps, (fp2_1 - f0_1) * inv_eps,
-                (fp0_2 - f0_2) * inv_eps, (fp1_2 - f0_2) * inv_eps, (fp2_2 - f0_2) * inv_eps
+                (fp0_0 - f0_0) * inv_eps, j_elev_0, j_throt_0,
+                (fp0_1 - f0_1) * inv_eps, j_elev_1, j_throt_1,
+                (fp0_2 - f0_2) * inv_eps, j_elev_2, j_throt_2
             )
 
             return J
