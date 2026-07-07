@@ -37,3 +37,8 @@
 **Vulnerability:** The application was not logging `RequestValidationError` exceptions, silently dropping invalid payloads and malformed data without creating an audit trail.
 **Learning:** Request validation errors are often the first sign of an attacker probing the API surface, fuzzing endpoints, or attempting payload-based attacks. Silently dropping these requests without logging creates a lack of observability and prevents security monitoring tools from detecting malicious activity.
 **Prevention:** Always log request validation failures (e.g., using `logger.warning`) as Security Events, ensuring that relevant context like the client IP and requested path are included and properly sanitized to prevent log forging.
+
+## 2026-10-26 - [Medium] Centralize True Client IP Extraction
+**Vulnerability:** The `RequestSizeLimitMiddleware` logged `request.client.host` directly instead of correctly extracting the true client IP from `X-Forwarded-For` proxy headers like Vercel, reducing observability. Other middlewares handled this manually, leading to duplicated and inconsistent security logic.
+**Learning:** Security mechanisms relying on client context (like IP addresses for logging or rate limiting) must extract that context uniformly. Scattered, manual extraction often leads to oversights in some middlewares, blinding security monitoring when behind proxies.
+**Prevention:** Implement and use a centralized utility function (e.g., `get_client_ip`) for extracting client context across all middlewares and exception handlers to ensure consistency and correctness.

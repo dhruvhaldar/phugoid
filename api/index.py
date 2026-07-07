@@ -23,14 +23,17 @@ app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+def get_client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[-1].strip()
+    return request.client.host if request.client else "unknown"
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     # Log the validation error as a security event for observability against probing/fuzzing
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        client_ip = forwarded.split(",")[-1].strip()
-    else:
-        client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_client_ip(request)
 
     logger.warning(f"Security Event: Request validation failed for IP {repr(str(client_ip))} on path {repr(str(request.url.path))}")
 
@@ -53,7 +56,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
         if "chunked" in request.headers.get("transfer-encoding", "").lower():
             # If chunked encoding, we cannot determine content length beforehand,
             # so we reject it to avoid memory exhaustion DOS.
-            logger.warning(f"Security Event: Rejected chunked transfer encoding from {repr(str(request.client.host)) if request.client else 'unknown'} on path {repr(str(request.url.path))}")
+            logger.warning(f"Security Event: Rejected chunked transfer encoding from {repr(str(get_client_ip(request)))} on path {repr(str(request.url.path))}")
             return JSONResponse(status_code=411, content={"detail": "Length Required"})
 
         content_length = request.headers.get("content-length")
@@ -61,10 +64,10 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
             try:
                 length = int(content_length)
                 if length > 1048576:
-                    logger.warning(f"Security Event: Payload too large ({length} bytes) from {repr(str(request.client.host)) if request.client else 'unknown'} on path {repr(str(request.url.path))}")
+                    logger.warning(f"Security Event: Payload too large ({length} bytes) from {repr(str(get_client_ip(request)))} on path {repr(str(request.url.path))}")
                     return JSONResponse(status_code=413, content={"detail": "Payload Too Large"})
             except ValueError:
-                logger.warning(f"Security Event: Invalid Content-Length header ('{repr(str(content_length))}') from {repr(str(request.client.host)) if request.client else 'unknown'} on path {repr(str(request.url.path))}")
+                logger.warning(f"Security Event: Invalid Content-Length header ('{repr(str(content_length))}') from {repr(str(get_client_ip(request)))} on path {repr(str(request.url.path))}")
                 return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
 
         return await call_next(request)
@@ -72,14 +75,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
 class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Get client IP
-        # Handle X-Forwarded-For for proxies (like Vercel)
-        forwarded = request.headers.get("x-forwarded-for")
-        if forwarded:
-            # Vercel appends the client IP to the end of the list.
-            # We take the last IP to prevent spoofing by clients adding their own headers.
-            client_ip = forwarded.split(",")[-1].strip()
-        else:
-            client_ip = request.client.host if request.client else "unknown"
+        client_ip = get_client_ip(request)
 
         # Hash the client IP with a salt to prevent storing PII in memory and thwart rainbow table attacks
         salted_ip = f"{client_ip}:{IP_HASH_SALT}"
