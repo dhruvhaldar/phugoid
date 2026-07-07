@@ -69,3 +69,10 @@
 ## 2023-10-27 - [TrimSolver Jacobian Analytical Derivatives]
 **Learning:** In a numerical trim solver computing the Jacobian matrix using forward difference for 3 variables (alpha, elevator, throttle), using exact analytical derivatives for elevator and throttle significantly reduces the number of calls to the underlying Equations of Motion (EoM). The derivatives for control inputs are purely linear.
 **Action:** Implemented analytical derivatives for `elevator` and `throttle` in `phugoid/trim.py` (explicitly assuming CD_de = 0 as is standard for simple models), reducing EoM calls during Jacobian evaluation and decreasing TrimSolver runtime from ~0.3s to ~0.2s.
+## 2026-07-07 - np.linalg.eigvals vs np.linalg.eig
+**Learning:** In stability analysis, computing only eigenvalues using `np.linalg.eigvals` avoids the overhead of calculating the full set of eigenvectors required by `np.linalg.eig`. This results in a ~30% performance boost when eigenvectors are unnecessary.
+**Action:** When computing stability modes or poles, always use `np.linalg.eigvals` instead of `np.linalg.eig` unless eigenvectors are explicitly needed.
+
+## 2026-07-07 - Submatrix Extraction with np.take
+**Learning:** Extracting small sub-matrices from a NumPy array using chained `np.take` operations is faster than using `np.ix_` with native tuples because it avoids indexing object instantiation and internal validation overhead inside NumPy.
+**Action:** In high-frequency paths requiring sub-matrix extraction across multiple axes, use `np.take` sequentially rather than `np.ix_`.
