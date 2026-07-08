@@ -42,3 +42,8 @@
 **Vulnerability:** The `RequestSizeLimitMiddleware` logged `request.client.host` directly instead of correctly extracting the true client IP from `X-Forwarded-For` proxy headers like Vercel, reducing observability. Other middlewares handled this manually, leading to duplicated and inconsistent security logic.
 **Learning:** Security mechanisms relying on client context (like IP addresses for logging or rate limiting) must extract that context uniformly. Scattered, manual extraction often leads to oversights in some middlewares, blinding security monitoring when behind proxies.
 **Prevention:** Implement and use a centralized utility function (e.g., `get_client_ip`) for extracting client context across all middlewares and exception handlers to ensure consistency and correctness.
+
+## 2026-10-26 - [Security Enhancement] Prevent Rate Limit Time Skew Bypass
+**Vulnerability:** The `RateLimitMiddleware` used `time.time()` to calculate rolling window expiration (e.g., `now - t < 60`). `time.time()` relies on the system clock, which can jump forwards or backwards due to NTP synchronization, leap seconds, or manual changes, potentially allowing an attacker to bypass rate limits or accidentally locking out legitimate users.
+**Learning:** Security mechanisms relying on time intervals (like rate limiters or session timeouts) must be resilient to system clock variations.
+**Prevention:** In security-sensitive time calculations, always use `time.monotonic()` instead of `time.time()` to guarantee a strictly increasing clock, preventing bypasses caused by system time adjustments.

@@ -81,7 +81,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         salted_ip = f"{client_ip}:{IP_HASH_SALT}"
         client_ip_hash = hashlib.sha256(salted_ip.encode("utf-8")).hexdigest()
 
-        now = time.time()
+        now = time.monotonic()
         # Clean up old timestamps (older than 60s)
         # Handle LRU: Remove from dict to re-insert at end if exists
         if client_ip_hash in request_counts:
